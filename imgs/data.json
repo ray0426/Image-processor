@@ -1,0 +1,26 @@
+[
+    {
+        "ID": "59060131",
+        "page": "p0",
+        "format": "jpg",
+        "tags": [],
+        "load_time": "2020-07-19 12:06:36",
+        "src": ".\\pics\\59060131_p0_master1200.jpg"
+    },
+    {
+        "ID": "62492065",
+        "page": "p0",
+        "format": "png",
+        "tags": [],
+        "load_time": "2020-07-19 12:06:36",
+        "src": ".\\pics\\62492065_p0_master1200.png"
+    },
+    {
+        "ID": "87492065",
+        "page": "p0",
+        "format": "png",
+        "tags": [],
+        "load_time": "2020-07-19 12:06:36",
+        "src": ".\\pics\\87492065_p0_master1200.png"
+    }
+]
