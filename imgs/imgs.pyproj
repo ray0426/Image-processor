@@ -25,10 +25,16 @@
     <Compile Include="src\img_data.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\test_file\test_GUI.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="src\show_img.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\test_codes.py">
+    <Compile Include="src\test_file\test_codes.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\test_file\test_GUI2.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
@@ -36,6 +42,7 @@
     <Folder Include="data\" />
     <Folder Include="pics\" />
     <Folder Include="src\" />
+    <Folder Include="src\test_file\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
