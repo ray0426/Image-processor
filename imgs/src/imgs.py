@@ -7,7 +7,7 @@ from img_data import *
 img_data = Img_Data()
 #img_data.reset()
 print(img_data.data)
-img_data.reload()
+img_data.scan_imgs()
 print(img_data.data)
 img_data.write_data()
 img1 = img_data.Search("59060131", "p0")
