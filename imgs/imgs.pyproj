@@ -25,6 +25,9 @@
     <Compile Include="src\img_data.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\main_win.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="src\test_file\test_GUI.py">
       <SubType>Code</SubType>
     </Compile>

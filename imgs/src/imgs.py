@@ -1,14 +1,16 @@
 import json
 import os
 
-from show_img import *
-from img_data import *
+import show_img
+import img_data
+import main_win
 
-img_data = Img_Data()
+img_data = img_data.Img_Data()
 #img_data.reset()
-print(img_data.data)
+#print(img_data.data)
 img_data.scan_imgs()
-print(img_data.data)
+#print(img_data.data)
 img_data.write_data()
 img1 = img_data.Search("59060131", "p0")
-window = Window(img_data.data)
+#img_window = show_img.Img_Window(img_data.data)
+main_window = main_win.main_Window()

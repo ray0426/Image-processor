@@ -15,9 +15,11 @@ class Img_Data ():
         print("load image data")
         with open('data.json', 'r', encoding='utf-8') as f:
             self.data = json.load(f)
+        print("load image data success!")
         return self.data
 
     def write_data(self):
+        print("write data")
         with open('data.json', 'w', encoding='utf-8') as f:
             json.dump(self.data, f, indent=4)
         print("write data success!")
