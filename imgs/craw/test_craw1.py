@@ -7,7 +7,14 @@ def test_1():
         'Referer': 'https://www.google.com',
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
     }
-    url = p.get("https://www.pixiv.net/ranking.php", data = headers)
+    postData = {
+            'mode': 'login',
+            'return_to': '/',
+            'pixiv_id': '',
+            'pass': '',
+            'skip': '1'
+    }
+    url = p.get("https://www.pixiv.net/ranking.php", headers = headers, data = postData)
     soup = BeautifulSoup(url.text,"html.parser")
     print(soup.prettify())
 
