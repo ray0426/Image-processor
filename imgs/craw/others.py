@@ -2,7 +2,11 @@ import urllib
 import http.cookiejar
 from bs4 import BeautifulSoup
 
+pixiv_id = ""
+password = ""
+
 class Pixiv:
+    
     def __init__(self):
 # 請求報文需要的一些資訊
 # 登陸地址
@@ -20,8 +24,8 @@ class Pixiv:
         self.postData = urllib.parse.urlencode({
             'mode': 'login',
             'return_to': '/',
-            'pixiv_id': '',
-            'pass': '',
+            'pixiv_id': pixiv_id,
+            'pass': password,
             'skip': '1'}).encode("utf-8")
 # cookie資訊，伺服器用來識別使用者身份
 # 獲取本地cookie資訊，構建一個包含cookie資訊的opener
@@ -32,8 +36,12 @@ class Pixiv:
     def get_first_page(self):
 # 向伺服器發起請求，請求報文內容包括：URL，頭部，表單；請求方式為post
         request = urllib.request.Request(self.loginURL, self.postData, self.loginHeader)
-        response = urllib.request.urlopen(request).decode("utf-8")
-        print(response)
+        try:
+                response = urllib.request.urlopen(request).decode("utf-8")
+                print(response)
+        except urllib.error.URLError as e:
+                print(e.reason)
+        
 #        html = response.read().decode('utf-8')
 #        print(html)
         #self.soup = BeautifulSoup(request,"html.parser")
