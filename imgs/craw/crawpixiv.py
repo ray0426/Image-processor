@@ -24,8 +24,13 @@ class Pixiv():
         self.postdata['pixiv_id'] = pixiv_id
         self.postdata['pass'] = password
 
-    def get_pic(self, locate):
-        '''give the website or the number of the pic, will dl the pic(first pic only now)'''
+    def get_pic(self, locate, tags = []):
+        '''give the website or the number of the pic, 
+            if the tags are included in pic tags,
+            then will dl the pic. '''
+            
+        pic_tags = set()
+
         try:
             int(locate)
             url = self.url + '/artworks/' + str(locate)
@@ -38,27 +43,42 @@ class Pixiv():
         soup_page = bs(req_page.text,"html.parser")
         sel_page = soup_page.select("meta#meta-preload-data")
         
-        i = 0
+        
 
-        for pic in sel_page:
-            for pic_info in pic["content"].split(","):
+        if sel_page:
+            for pic_info in sel_page[0]["content"].split(","):
                 if "regular" in pic_info:
-                    req_pic = requests.get(pic_info[11:-1] , headers = self.head)
-                    img = req_pic.content
+                    url_front_pic = pic_info[11:-17]
+                    url_back_pic = pic_info[-16:-1]
+                if "tag" in pic_info and "{" in pic_info:
+                    pic_tags.add(pic_info.lstrip('tagsauthorId":[{')[:-1])
+        
+        i = 0
+        do = True
+        
+        for tag in tags:
+            if not tag in pic_tags:
+                do = False
 
-                    if (i == 0):
-                        filename = title +'.png'
-                    else:
-                        filename = title + '(' + str(i) + ')' + '.png'
-
-                    with open (self.path + '/' + filename , 'wb') as f:
-                        f.write(img)
-                    break
+        req_pic = requests.get(url_front_pic + str(i) + url_back_pic, headers = self.head)
+                
+        while do and ("403 Forbidden" and "404 Not Found" not in req_pic.text):       
+            img = req_pic.content
+            
+            if (i == 0):
+                filename = title +'.png'
+            else:
+                filename = title + '(' + str(i) + ')' + '.png'
+            
+            with open (self.path + '/' + filename , 'wb') as f:
+                f.write(img)
+            
             i = i + 1
+            req_pic = requests.get(url_front_pic + str(i) + url_back_pic, headers = self.head)
 
         self.head["referer"] = self.url
 
-    def run_rank(self, mode = None, content = None, date = None, tag = None):
+    def run_rank(self, mode = None, content = None, date = None, tags = []):
         '''dl pic on the rank. now can only dl for one page'''
         url = self.url + "/ranking.php"
         params = {'mode' : mode , 'content' : content , 'date' : date}
@@ -75,13 +95,13 @@ class Pixiv():
             if '/artworks/' in hr:
                 locate = hr[-8:]
                 #print(hr)
-                self.get_pic(locate)
+                self.get_pic(locate, tags)
                 time.sleep(1)
 
 if __name__ == '__main__':
     p = Pixiv()
-    #p.get_pic(83182630)
-    p.run_rank(date = 20200725)
+    p.get_pic(83113557, ['魔法少女まどか☆マギカ','鹿目まどか'])
+    #p.run_rank(date = 20200725)
 
             
 
