@@ -1,8 +1,92 @@
 import requests
 from bs4 import BeautifulSoup as bs
 import time
+class Picture():
+    '''use for recording data about the pic on the website'''
+    def __init__(self, url = ""):
+        '''give url and record data'''
+        self.pic = url[-8:]
+        self.title = ""
+        self.painter = ""
+        self.place = ""
+        self.tag = []
+        self.paint_time = ""
+        self.download_time = ""
+
+        if url:
+            req = requests.get(url)
+            soup = bs(req.text,"html.parser")
+            self.setting(soup)
+
+        self.get_info()
+
+    def get_info(self):
+        if self.place:
+            print("pic",self.pic)
+            print("title:",self.title)
+            print("painter:",self.painter)
+            print("place:",self.place)
+            print("tag:",self.tag)
+            print("paint_time",self.paint_time)
+            print("download_time",self.download_time)
+            print("")
+        else: print("something wrong")
+
+    def is_empty(self):
+        if not self.place:
+            return True
+    
+    def setting(self, soup):
+        self.set_title(soup)
+        self.set_painter(soup)
+        self.set_place(soup)
+        self.set_tag(soup)
+        self.set_paint_time(soup)
+        self.set_download_time(soup)
+
+    def set_title(self, soup):
+        self.title = soup.title.string[1:-8]
+    
+    def set_painter(self, soup):
+        self.painter = ""
+        sel = soup.select("meta#meta-preload-data")
+        if sel:
+            for s in sel[0]["content"].split(','):
+                if ("authorId" in s):
+                    painter_id = s.lstrip('tags":[{authorId')[:-1]
+                if ("userName" in s):
+                    self.painter = s[12:-1]
+                if self.painter:
+                    break
+            self.painter = self.painter + "(id:" + painter_id + ")"
+
+    def set_place(self, soup):
+        sel = soup.select("meta#meta-preload-data")
+        if sel:
+            for s in sel[0]["content"].split(','):
+                if "regular" in s:
+                    self.place = s[11:-1]
+                    break
+
+    def set_tag(self, soup):
+        sel = soup.select("meta#meta-preload-data")
+        if sel:
+            for s in sel[0]["content"].split(','):
+                if ("tag" in s and "{" in s):
+                    self.tag.append(s.lstrip('tags":[{authorId')[:-1])
+    
+    def set_paint_time(self, soup):
+        sel = soup.select("meta#meta-preload-data")
+        if sel:
+            for s in sel[0]["content"].split(','):
+                if ("uploadDate" in s):
+                    self.paint_time = s[14:-7]
+    
+    def set_download_time(self, soup):        
+        self.download_time = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime()) 
 
 class Pixiv():
+    '''use for crawing on Pixiv'''
     def __init__(self, path = "./imgs/craw/pic", pixiv_id = "", password = ""):
         self.url = "https://www.pixiv.net"
         self.path = path
@@ -16,6 +100,7 @@ class Pixiv():
         }
 
         self.req = None
+        self.info = dict()
     
     def change_path(self, path):
         self.path = path
@@ -28,8 +113,6 @@ class Pixiv():
         '''give the website or the number of the pic, 
             if the tags are included in pic tags,
             then will dl the pic. '''
-            
-        pic_tags = set()
 
         try:
             int(locate)
@@ -37,27 +120,20 @@ class Pixiv():
         except:
             url = str(locate)
         
-        title = url[-8:]
-        req_page = requests.get(url)
+        
         self.head["referer"] = url
-        soup_page = bs(req_page.text,"html.parser")
-        sel_page = soup_page.select("meta#meta-preload-data")
+        pic = Picture(url)
         
-        
+        picname = pic.pic 
+        self.info[picname] = pic             
+        url_front_pic = pic.place[:-16]
+        url_back_pic = pic.place[-15:]
 
-        if sel_page:
-            for pic_info in sel_page[0]["content"].split(","):
-                if "regular" in pic_info:
-                    url_front_pic = pic_info[11:-17]
-                    url_back_pic = pic_info[-16:-1]
-                if "tag" in pic_info and "{" in pic_info:
-                    pic_tags.add(pic_info.lstrip('tagsauthorId":[{')[:-1])
-        
         i = 0
         do = True
         
         for tag in tags:
-            if not tag in pic_tags:
+            if not tag in pic.tag:
                 do = False
 
         req_pic = requests.get(url_front_pic + str(i) + url_back_pic, headers = self.head)
@@ -66,9 +142,9 @@ class Pixiv():
             img = req_pic.content
             
             if (i == 0):
-                filename = title +'.png'
+                filename = picname +'.png'
             else:
-                filename = title + '(' + str(i) + ')' + '.png'
+                filename = picname + '(' + str(i) + ')' + '.png'
             
             with open (self.path + '/' + filename , 'wb') as f:
                 f.write(img)
@@ -100,7 +176,7 @@ class Pixiv():
 
 if __name__ == '__main__':
     p = Pixiv()
-    p.get_pic(83113557, ['魔法少女まどか☆マギカ','鹿目まどか'])
+    p.get_pic(83113557, ["魔法少女まどか☆マギカ","星空ドレス"])
     #p.run_rank(date = 20200725)
 
             
