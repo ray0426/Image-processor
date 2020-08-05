@@ -8,6 +8,7 @@ class Picture():
     def __init__(self, url = ""):
         '''give url and record data'''
         self.pic = url[-8:]
+        self.page = "p0"
         self.title = ""
         self.painter = ""
         self.place = ""
@@ -17,11 +18,11 @@ class Picture():
 
         if url:
             req = requests.get(url)
-            soup = bs(req.text,"html.parser")
-            self.setting(soup)
-
-        self.get_info('easy')
-
+            if ("403 Forbidden" and "404 Not Found" not in req.text):
+                soup = bs(req.text,"html.parser")
+                self.setting(soup)
+            self.get_info('easy')
+        
     def get_info(self, mode = 'all'):
         if self.place:
             if mode == 'all':
@@ -36,7 +37,18 @@ class Picture():
             if mode == 'easy':
                 print("pic",self.pic)
                 print("title:",self.title)
+                print("")
         else: print("something wrong")
+    
+    def copy(self,copypic):
+        self.pic = copypic.pic
+        self.page = copypic.page
+        self.title = copypic.title
+        self.painter = copypic.painter
+        self.place = copypic.place
+        self.tag = copypic.tag
+        self.paint_time = copypic.paint_time
+        self.download_time = copypic.download_time
 
     def is_empty(self):
         if not self.place:
@@ -52,7 +64,7 @@ class Picture():
 
     def set_title(self, soup):
         self.title = soup.title.string[1:-8]
-    
+        
     def set_painter(self, soup):
         self.painter = ""
         sel = soup.select("meta#meta-preload-data")
@@ -91,6 +103,9 @@ class Picture():
     def set_download_time(self, soup):        
         self.download_time = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime()) 
 
+    def set_page(self, page):
+        self.page = "p" + str(page)
+
 class Pixiv():
     '''use for crawing on Pixiv'''
     def __init__(self, path = "./imgs/craw/pic", pixiv_id = "", password = ""):
@@ -115,6 +130,13 @@ class Pixiv():
         self.postdata['pixiv_id'] = pixiv_id
         self.postdata['pass'] = password
 
+    def set_pic_info(self, pic):
+        picname = pic.pic 
+        picpage = pic.page
+        key = picname + "_" + picpage
+        self.info[key] = pic
+        return key
+
     def get_pic(self, locate, tags = []):
         '''give the website or the number of the pic, 
             if the tags are included in pic tags,
@@ -126,12 +148,10 @@ class Pixiv():
         except:
             url = str(locate)
         
-        
         self.head["referer"] = url
+
         pic = Picture(url)
-        
-        picname = pic.pic 
-        self.info[picname] = pic             
+        picname = self.set_pic_info(pic)             
         url_front_pic = pic.place[:-16]
         url_back_pic = pic.place[-15:]
 
@@ -147,16 +167,22 @@ class Pixiv():
         while do and ("403 Forbidden" and "404 Not Found" not in req_pic.text):       
             img = req_pic.content
             
-            if (i == 0):
-                filename = picname +'.png'
-            else:
-                filename = picname + '(' + str(i) + ')' + '.png'
-            
+            filename = picname +'.png'            
             with open (self.path + '/' + filename , 'wb') as f:
                 f.write(img)
             
             i = i + 1
+
+            pic_else = Picture()
+            pic_else.copy(pic)
+            pic_else.set_page(i)
+            picname = self.set_pic_info(pic_else)
+
             req_pic = requests.get(url_front_pic + str(i) + url_back_pic, headers = self.head)
+            
+        del self.info[picname]
+        print("for", i ,"pages")
+        print("")
 
         self.head["referer"] = self.url
 
@@ -206,7 +232,7 @@ class Pixiv():
             js_rank = json.loads(req_rank.text)
             
             for ele in js_rank['contents']:
-                if i <= limit:
+                if i < limit:
                     hr_rank.append(ele['url'][-26:-18])
                 i = i + 1
             p = p + 1
@@ -222,7 +248,8 @@ class Pixiv():
 if __name__ == '__main__':
     p = Pixiv()
     #p.get_pic(83113557, ["魔法少女まどか☆マギカ","星空ドレス"])
-    #p.run_rank(date = 20200725)
+    p.run_rank(date = 20200725, limit = 3)
+    print(p.info)
 
             
 
