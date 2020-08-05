@@ -1,6 +1,8 @@
 import requests
 from bs4 import BeautifulSoup as bs
+import json
 import time
+
 class Picture():
     '''use for recording data about the pic on the website'''
     def __init__(self, url = ""):
@@ -18,18 +20,22 @@ class Picture():
             soup = bs(req.text,"html.parser")
             self.setting(soup)
 
-        self.get_info()
+        self.get_info('easy')
 
-    def get_info(self):
+    def get_info(self, mode = 'all'):
         if self.place:
-            print("pic",self.pic)
-            print("title:",self.title)
-            print("painter:",self.painter)
-            print("place:",self.place)
-            print("tag:",self.tag)
-            print("paint_time",self.paint_time)
-            print("download_time",self.download_time)
-            print("")
+            if mode == 'all':
+                print("pic",self.pic)
+                print("title:",self.title)
+                print("painter:",self.painter)
+                print("place:",self.place)
+                print("tag:",self.tag)
+                print("paint_time",self.paint_time)
+                print("download_time",self.download_time)
+                print("")
+            if mode == 'easy':
+                print("pic",self.pic)
+                print("title:",self.title)
         else: print("something wrong")
 
     def is_empty(self):
@@ -55,7 +61,7 @@ class Picture():
                 if ("authorId" in s):
                     painter_id = s.lstrip('tags":[{authorId')[:-1]
                 if ("userName" in s):
-                    self.painter = s[12:-1]
+                    self.painter = s[12:-2]
                 if self.painter:
                     break
             self.painter = self.painter + "(id:" + painter_id + ")"
@@ -154,29 +160,68 @@ class Pixiv():
 
         self.head["referer"] = self.url
 
-    def run_rank(self, mode = None, content = None, date = None, tags = []):
-        '''dl pic on the rank. now can only dl for one page'''
+#    def run_rank_old(self, mode = None, content = None, date = None, tags = []):
+#        '''dl pic on the rank. now can only dl for one page'''
+#        url = self.url + "/ranking.php"
+#        params = {'mode' : mode , 'content' : content , 'date' : date}
+#
+#        req_rank = requests.get(url, params = params)
+#        soup_rank = bs(req_rank.text,"html.parser")
+#        sel_rank = soup_rank.select("div.ranking-image-item a")
+#
+#        hr_rank = []
+#        for s in sel_rank:
+#            hr_rank.append(s["href"])
+#
+#        for hr in hr_rank:
+#            if '/artworks/' in hr:
+#                locate = hr[-8:]
+#                #print(hr)
+#                self.get_pic(locate, tags)
+#                time.sleep(1)
+    
+    def run_rank(self, mode = None, content = None, date = None, tags = [], page = float('inf'), limit = float('inf')):
+        '''dl pic on the rank.
+            page : dl for how many pages
+            limit : dl for how many pic'''
         url = self.url + "/ranking.php"
-        params = {'mode' : mode , 'content' : content , 'date' : date}
-
-        req_rank = requests.get(url, params = params)
-        soup_rank = bs(req_rank.text,"html.parser")
-        sel_rank = soup_rank.select("div.ranking-image-item a")
+        params = {'mode' : mode , 'content' : content , 'date' : date, 'format' : 'json'}
 
         hr_rank = []
-        for s in sel_rank:
-            hr_rank.append(s["href"])
+        i = 0
+        p = 1
+        
+        while p <= page and i < limit:
+            params['p'] = str(p)
+
+            try:
+                req_rank = requests.get(url, params = params)
+            except:
+                if p == 1 :
+                    print("maybe your params have wrong keyword")
+                else :
+                    print("something unknown happened")
+                break
+
+            js_rank = json.loads(req_rank.text)
+            
+            for ele in js_rank['contents']:
+                if i <= limit:
+                    hr_rank.append(ele['url'][-26:-18])
+                i = i + 1
+            p = p + 1
 
         for hr in hr_rank:
-            if '/artworks/' in hr:
-                locate = hr[-8:]
-                #print(hr)
-                self.get_pic(locate, tags)
+            try:
+                num_hr = int(hr)
+                self.get_pic(num_hr ,tags = tags)
                 time.sleep(1)
+            except:
+                print("we got wrong url %s", hr)
 
 if __name__ == '__main__':
     p = Pixiv()
-    p.get_pic(83113557, ["魔法少女まどか☆マギカ","星空ドレス"])
+    #p.get_pic(83113557, ["魔法少女まどか☆マギカ","星空ドレス"])
     #p.run_rank(date = 20200725)
 
             
