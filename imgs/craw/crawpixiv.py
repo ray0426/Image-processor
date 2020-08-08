@@ -130,12 +130,12 @@ class Pixiv():
         self.postdata['pixiv_id'] = pixiv_id
         self.postdata['pass'] = password
 
-    def set_pic_info(self, pic):
+    def get_pic_name(self, pic):
         picname = pic.pic 
         picpage = pic.page
-        key = picname + "_" + picpage
-        self.info[key] = pic
-        return key
+        name = picname + "_" + picpage
+        #self.info[key] = pic
+        return name
 
     def get_pic(self, locate, tags = []):
         '''give the website or the number of the pic, 
@@ -151,7 +151,7 @@ class Pixiv():
         self.head["referer"] = url
 
         pic = Picture(url)
-        picname = self.set_pic_info(pic)             
+        picname = self.get_pic_name(pic)             
         url_front_pic = pic.place[:-16]
         url_back_pic = pic.place[-15:]
 
@@ -164,23 +164,22 @@ class Pixiv():
 
         req_pic = requests.get(url_front_pic + str(i) + url_back_pic, headers = self.head)
                 
-        while do and ("403 Forbidden" and "404 Not Found" not in req_pic.text):       
+        while do and ("403 Forbidden" and "404 Not Found" not in req_pic.text):
+            self.info[picname] = pic   #add new info
+
             img = req_pic.content
             
             filename = picname +'.png'            
-            with open (self.path + '/' + filename , 'wb') as f:
+            with open (self.path + '/' + filename , 'wb') as f:     #dl pic
                 f.write(img)
             
             i = i + 1
+            pic.set_page(i)     #next page
 
-            pic_else = Picture()
-            pic_else.copy(pic)
-            pic_else.set_page(i)
-            picname = self.set_pic_info(pic_else)
-
+            picname = self.get_pic_name(pic)
             req_pic = requests.get(url_front_pic + str(i) + url_back_pic, headers = self.head)
-            
-        del self.info[picname]
+            #change data
+
         print("for", i ,"pages")
         print("")
 
@@ -206,7 +205,7 @@ class Pixiv():
 #                self.get_pic(locate, tags)
 #                time.sleep(1)
     
-    def run_rank(self, mode = None, content = None, date = None, tags = [], page = float('inf'), limit = float('inf')):
+    def run_rank(self, tags = [], mode = None, content = None, date = None, page = float('inf'), limit = float('inf')):
         '''dl pic on the rank.
             page : dl for how many pages
             limit : dl for how many pic'''
@@ -233,7 +232,8 @@ class Pixiv():
             
             for ele in js_rank['contents']:
                 if i < limit:
-                    hr_rank.append(ele['url'][-26:-18])
+                    place = ele['url']
+                    hr_rank.append(place.split('/')[-1][:-18])
                 i = i + 1
             p = p + 1
 
@@ -248,7 +248,7 @@ class Pixiv():
 if __name__ == '__main__':
     p = Pixiv()
     #p.get_pic(83113557, ["魔法少女まどか☆マギカ","星空ドレス"])
-    p.run_rank(date = 20200725, limit = 3)
+    p.run_rank(date = 20200725, limit = 1)
     print(p.info)
 
             
