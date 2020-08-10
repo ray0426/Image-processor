@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>29a2e545-4a22-46f8-86ae-0166dcf1373e</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>src\main_win.py</StartupFile>
+    <StartupFile>src\imgs.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -24,8 +24,6 @@
     <Compile Include="craw\crawpixiv.py" />
     <Compile Include="craw\crawpixiv.py" />
     <Compile Include="craw\others.py" />
-    <Compile Include="craw\others.py" />
-    <Compile Include="craw\test_craw1.py" />
     <Compile Include="craw\test_craw1.py" />
     <Compile Include="src\imgs.py" />
     <Compile Include="src\img_data.py">
@@ -58,7 +56,6 @@
     <Folder Include="src\test_file\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="craw\information" />
     <Content Include="craw\information" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
