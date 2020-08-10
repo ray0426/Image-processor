@@ -50,9 +50,10 @@ class main_Window ():
                     master=self.fr_exhibit,
                     relief=tk.RAISED,
                     borderwidth=1
+                    ,bg='yellow'
                 )
-                frame.bind('<Enter>', self.enter)
-                frame.bind('<Leave>', self.leave)
+                frame.bind('<Enter>', lambda event, index=(5 * i + j): self.enter(index))
+                frame.bind('<Leave>', lambda event, index=(5 * i + j): self.leave(index))
                 frame.grid(row=i, column=j, ipadx=5, ipady=5, padx=5, pady=5, sticky="nw")
                 self.img_frames = np.append(self.img_frames, frame)
 
@@ -81,12 +82,13 @@ class main_Window ():
         else:
             return [int(156 * size[0] / size[1]), 156]
 
-    def enter(self, event):
-        print("Enter")
-        print(event)
+    def enter(self, index):
+        print("Enter" + str(index))
+        self.img_frames[index].configure(bg='green')
 
-    def leave(self, event):
-        print("Leave\n")
+    def leave(self, index):
+        print("Leave" + str(index) + "\n")
+        self.img_frames[index].configure(bg='yellow')
 
     def test(self):
         print(self.img_frames)
