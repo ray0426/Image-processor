@@ -130,6 +130,15 @@ class Pixiv():
         self.postdata['pixiv_id'] = pixiv_id
         self.postdata['pass'] = password
 
+    def trans_number(self, locate):
+        try:
+            int(locate)
+            url = self.url + '/artworks/' + str(locate)
+        except:
+            url = str(locate)
+
+        return url
+
     def get_pic_name(self, pic):
         picname = pic.pic 
         picpage = pic.page
@@ -142,11 +151,7 @@ class Pixiv():
             if the tags are included in pic tags,
             then will dl the pic. '''
 
-        try:
-            int(locate)
-            url = self.url + '/artworks/' + str(locate)
-        except:
-            url = str(locate)
+        url = self.trans_number(locate)
         
         self.head["referer"] = url
 
@@ -205,6 +210,15 @@ class Pixiv():
 #                self.get_pic(locate, tags)
 #                time.sleep(1)
     
+    def run_list(self, piclist, tags = []):
+        for hr in piclist:
+            try:
+                num_hr = int(hr)
+                self.get_pic(num_hr ,tags = tags)
+                time.sleep(1)
+            except:
+                print("we got wrong url", hr)
+
     def run_rank(self, tags = [], mode = None, content = None, date = None, page = float('inf'), limit = float('inf')):
         '''dl pic on the rank.
             page : dl for how many pages
@@ -237,19 +251,42 @@ class Pixiv():
                 i = i + 1
             p = p + 1
 
-        for hr in hr_rank:
-            try:
-                num_hr = int(hr)
-                self.get_pic(num_hr ,tags = tags)
-                time.sleep(1)
-            except:
-                print("we got wrong url %s", hr)
+        self.run_list(hr_rank, tags = tags)
+    
+    def run_author(self, locate, tags = []):
+        '''not tested
+            can found most of the pic of same author
+            now can only use pic find pic, can not use author number
+            and some pic info may be missed...'''
+        url = self.trans_number(locate)
+        req_init = requests.get(url)
+        soup_init = bs(req_init.text,"html.parser")
+        sel_one = soup_init.select("meta#meta-preload-data")
+        sel_two = sel_one[0]["content"].split(',')
 
+    #    for sel in sel_two:
+    #        try: print(int(sel.split('"')[1]))
+    #        except: pass
+
+        hr_auth = []
+        for sel in sel_two:
+            try:
+                hr_num = int(sel.split('"')[1])
+                hr_auth.append(hr_num)
+            except:
+                pass
+        
+        self.run_list(hr_auth, tags = tags)
+        
+            
+
+        
 if __name__ == '__main__':
     p = Pixiv()
     #p.get_pic(83113557, ["魔法少女まどか☆マギカ","星空ドレス"])
-    p.run_rank(date = 20200725, limit = 1)
-    print(p.info)
+    #p.run_rank(date = 20200725, limit = 1)
+    p.run_author(11491793)
+    #print(p.info)
 
             
 

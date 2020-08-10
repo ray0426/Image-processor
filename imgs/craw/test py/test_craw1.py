@@ -87,8 +87,18 @@ def test_craw_rank_easy():
         
         time.sleep(1)
 
+def test_bodyload():
+    para = {
+    "user-agent" :"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36"
+    ,"referer":"https://www.pixiv.net"
+    ,'format': "json"
+    }
+    p = requests.get("https://www.pixiv.net/users/1113943/artworks?p=3", params = para)
+    s = bs(p.text, "html.parser")
+    print(s.prettify())
+
 
 
 if __name__ == "__main__":
     #with open ('./craw')
-    test_craw_rank_easy()
+    test_bodyload()
