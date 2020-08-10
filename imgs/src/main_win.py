@@ -49,12 +49,13 @@ class main_Window ():
                 frame = tk.Frame(
                     master=self.fr_exhibit,
                     relief=tk.RAISED,
-                    borderwidth=1
-                    ,bg='yellow'
+                    borderwidth=1,
+                    bg='yellow'
                 )
                 frame.bind('<Enter>', lambda event, index=(5 * i + j): self.enter(index))
                 frame.bind('<Leave>', lambda event, index=(5 * i + j): self.leave(index))
                 frame.grid(row=i, column=j, ipadx=5, ipady=5, padx=5, pady=5, sticky="nw")
+                frame.grid_remove()
                 self.img_frames = np.append(self.img_frames, frame)
 
                 label_img = tk.Label(frame)
@@ -73,7 +74,11 @@ class main_Window ():
             photo = ImageTk.PhotoImage(img)
             self.imgs[index].configure(image=photo, height=150, width=160)
             self.imgs[index].image = photo
+            self.img_frames[index].grid()
             index = index + 1
+
+        for i in range(index, 16):
+            self.img_frames[index].grid_remove()
             
     # function to resize the image with correct width height rate
     def img_resize(self, size):
