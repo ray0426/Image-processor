@@ -14,22 +14,39 @@ class main_Window ():
         self.window = tk.Tk()
         self.window.title('Img Player')
         self.window.geometry('1024x600')
-        self.window.minsize(1024, 660) 
+        self.window.minsize(1200, 660)
+        #self.window.maxsize(1200, 660)
         self.window.rowconfigure(0, minsize=660, weight=1) # height (row height)
-        self.window.columnconfigure(0, minsize=124, weight=1)  # width (column width)
+        self.window.columnconfigure(0, minsize=200, weight=1)  # width (column width)
         self.window.columnconfigure(1, minsize=900, weight=1)  # width (column width)
+        self.window.columnconfigure(2, minsize=2, weight=1)  # width (column width)
         self.create_menu()
         self.fr_info = tk.Frame(self.window, bg='yellow')
-        self.fr_exhibit = tk.Frame(self.window, bg='blue')
         self.btn_open = tk.Button(self.fr_info, text="Open")
         self.btn_save = tk.Button(self.fr_info, text="Save As...")
         self.btn_open.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
         self.btn_save.grid(row=1, column=0, sticky="ew", padx=5)
         self.fr_info.grid(row=0, column=0, sticky="nesw")
-        self.fr_exhibit.grid(row=0, column=1, sticky="nesw")
+
+        self.canvas = tk.Canvas(self.window, bg='#FFFFFF',scrollregion=(0,0,00,600))
+        self.vbar = tk.Scrollbar(self.window, orient='vertical')
+        self.vbar.grid(row=0, column=2, sticky="nesw")
+        self.vbar.config(command=self.canvas.yview)
+        self.canvas.config(width=300,height=300)
+        self.canvas.config(yscrollcommand=self.vbar.set) #xscrollcommand=hbar.set, yscrollcommand=vbar.set)
+        self.canvas.grid(row=0, column=1, sticky="nesw")
+        
+
+        self.fr_exhibit = tk.Frame(self.canvas, bg='blue', height=2000)
+        self.canvas.create_window((0, 0), anchor='nw', window=self.fr_exhibit)
+        #self.fr_exhibit.pack(side='left', expand=True, fill='both')
         #self.refresh_exhibit()
         self.create_exhibit()
         self.refresh_img()
+        
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
+        
 
     def create_menu(self):
         self.menu = tk.Menu(self.window)
@@ -42,7 +59,7 @@ class main_Window ():
         self.img_frames = np.empty((0), dtype=tk.Frame)
         self.imgs = np.empty((0), dtype=tk.Label)
         self.img_names = np.empty((0), dtype=tk.Label)
-        for i in range(3):
+        for i in range(100):
             self.fr_exhibit.rowconfigure(i, minsize=220)
             for j in range(5):
                 self.fr_exhibit.columnconfigure(j, minsize=180)

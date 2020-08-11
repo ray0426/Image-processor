@@ -47,6 +47,9 @@
     <Compile Include="src\test_file\test_GUI_title.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\test_file\test_scrolable.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="craw\" />
