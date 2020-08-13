@@ -45,6 +45,7 @@ class main_Window ():
         self.refresh_img()
         
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        self.bind_display()
 
         
 
@@ -69,8 +70,6 @@ class main_Window ():
                     borderwidth=1,
                     bg='yellow'
                 )
-                frame.bind('<Enter>', lambda event, index=(5 * i + j): self.enter(index))
-                frame.bind('<Leave>', lambda event, index=(5 * i + j): self.leave(index))
                 frame.grid(row=i, column=j, ipadx=5, ipady=5, padx=5, pady=5, sticky="nw")
                 frame.grid_remove()
                 self.img_frames = np.append(self.img_frames, frame)
@@ -104,13 +103,42 @@ class main_Window ():
         else:
             return [int(156 * size[0] / size[1]), 156]
 
+    def bind_display(self):
+        for i in range(len(self.img_frames)):
+            self.img_frames[i].bind('<Enter>', lambda event, index=i: self.enter(index))
+            self.img_frames[i].bind('<Leave>', lambda event, index=i: self.leave(index))
+            for widget in [self.img_frames[i], self.imgs[i], self.img_names[i]]:
+                widget.bind('<Button-1>', lambda event, index=i: self.click(index))
+                widget.bind('<ButtonRelease-1>', lambda event, index=i: self.release(index))
+                widget.bind('<Double-Button-1>', lambda event, index=i: self.click_double(index))
+                
+                #self.img_frames[i].bind('<Button-1>', lambda event, index=i: self.click(index))
+                #self.img_frames[i].bind('<ButtonRelease-1>', lambda event, index=i: self.release(index))
+                #self.imgs[i].bind('<Button-1>', lambda event, index=i: self.click(index))
+                #self.imgs[i].bind('<ButtonRelease-1>', lambda event, index=i: self.release(index))
+                #self.img_names[i].bind('<Button-1>', lambda event, index=i: self.click(index))
+                #self.img_names[i].bind('<ButtonRelease-1>', lambda event, index=i: self.release(index))
+                
+
+
     def enter(self, index):
-        print("Enter" + str(index))
+        print("Enter: " + str(index))
         self.img_frames[index].configure(bg='green')
 
     def leave(self, index):
-        print("Leave" + str(index) + "\n")
+        print("Leave: " + str(index) + "\n")
         self.img_frames[index].configure(bg='yellow')
+
+    def click(self, index):
+        print("Click: " + str(index))
+        self.img_frames[index].configure(bg='red', relief=tk.FLAT,)
+
+    def release(self, index):
+        print("Release: " + str(index))
+        self.img_frames[index].configure(bg='green', relief=tk.RAISED,)
+
+    def click_double(self, index):
+        print("Double click: " + str(index))
 
     def test(self):
         print(self.img_frames)
