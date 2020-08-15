@@ -48,8 +48,12 @@ class Img_Tag ():
         return new_tag
 
     ''' find tag in self.data_tag by name '''
-    def find_by_name(self, tag):
-        return [t for t in self.data_tag if t['tag_name'] == tag][0]
+    def find_by_name(self, tag_name):
+        return [t for t in self.data_tag if t['tag_name'] == tag_name][0]
+
+    ''' find tag in self.data_tag by id '''
+    def find_by_id(self, tag_id):
+        return [t for t in self.data_tag if t['tag_id'] == tag_id][0]
 
 ''' return the time with format '''
 def time_now():
@@ -61,4 +65,5 @@ if __name__ == '__main__':
     print(img_tag.tags_to_id(["banana", "apple"]))
     print(img_tag.tags_to_id(["apple", "pie", "banana"]))
     print(img_tag.tags_to_id(["pie", "banana", "apple"]))
+    print(img_tag.tags_to_id(["peach", "orange", "mango", "melon", "tomato"]))
     img_tag.write_tags()

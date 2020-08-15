@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>29a2e545-4a22-46f8-86ae-0166dcf1373e</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>src\test_file\test_tags.py</StartupFile>
+    <StartupFile>src\imgs.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>

@@ -16,25 +16,44 @@ class main_Window ():
         self.window.geometry('1024x600')
         self.window.minsize(1200, 660)
         #self.window.maxsize(1200, 660)
-        self.window.rowconfigure(0, minsize=660, weight=1) # height (row height)
+        self.window.rowconfigure(0, minsize=330, weight=1) # height (row height)
+        self.window.rowconfigure(1, minsize=330, weight=1) # height (row height)
         self.window.columnconfigure(0, minsize=200, weight=1)  # width (column width)
         self.window.columnconfigure(1, minsize=900, weight=1)  # width (column width)
         self.window.columnconfigure(2, minsize=2, weight=1)  # width (column width)
         self.create_menu()
-        self.fr_info = tk.Frame(self.window, bg='yellow')
-        self.btn_open = tk.Button(self.fr_info, text="Open")
-        self.btn_save = tk.Button(self.fr_info, text="Save As...")
-        self.btn_open.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
-        self.btn_save.grid(row=1, column=0, sticky="ew", padx=5)
-        self.fr_info.grid(row=0, column=0, sticky="nesw")
+
+        self.filter = tk.Frame(self.window, bg='yellow')
+        self.filter.grid(row=0, column=0, padx=3, pady=3, sticky="nesw")
+        
+
+        self.fr_info = tk.Frame(self.window, bg='pink')
+        self.fr_info.grid(row=1, column=0, padx=3, pady=3, sticky="nesw")
+        self.fr_info.columnconfigure(0, minsize=75, weight=1)
+        #self.fr_info.columnconfigure(1, minsize=125, weight=1)
+        self.display_info = {}
+        self.display_info['title'] = tk.Label(master=self.fr_info, font=("TkDefaultFont", 14), text="title: ")
+        self.display_info['title'].grid(row=0, column=0, ipadx=1, ipady=1, padx=4, pady=(4, 2), sticky="ew")
+        self.display_info['painter'] = tk.Label(master=self.fr_info, font=("TkDefaultFont", 14), text="painter: ")
+        self.display_info['painter'].grid(row=1, column=0, ipadx=1, ipady=1, padx=4, pady=2, sticky="ew")
+        self.display_info['paint_time'] = tk.Label(master=self.fr_info, font=("TkDefaultFont", 14), text="paint time: ")
+        self.display_info['paint_time'].grid(row=2, column=0, ipadx=1, ipady=1, padx=4, pady=2, sticky="ew")
+        self.display_info['dl_time'] = tk.Label(master=self.fr_info, font=("TkDefaultFont", 14), text="dl time: ")
+        self.display_info['dl_time'].grid(row=3, column=0, ipadx=1, ipady=1, padx=4, pady=2, sticky="ew")
+        self.display_info['id_page'] = tk.Label(master=self.fr_info, font=("TkDefaultFont", 14), text="id/page: ")
+        self.display_info['id_page'].grid(row=4, column=0, ipadx=1, ipady=1, padx=4, pady=2, sticky="ew")
+        #self.btn_open = tk.Button(self.fr_info, text="Open")
+        #self.btn_save = tk.Button(self.fr_info, text="Save As...")
+        #self.btn_open.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
+        #self.btn_save.grid(row=1, column=0, sticky="ew", padx=5)
 
         self.canvas = tk.Canvas(self.window, bg='#FFFFFF',scrollregion=(0,0,00,600))
         self.vbar = tk.Scrollbar(self.window, orient='vertical')
-        self.vbar.grid(row=0, column=2, sticky="nesw")
+        self.vbar.grid(row=0, column=2, rowspan=2, sticky="nesw")
         self.vbar.config(command=self.canvas.yview)
         self.canvas.config(width=300,height=300)
         self.canvas.config(yscrollcommand=self.vbar.set) #xscrollcommand=hbar.set, yscrollcommand=vbar.set)
-        self.canvas.grid(row=0, column=1, sticky="nesw")
+        self.canvas.grid(row=0, column=1, rowspan=2, sticky="nesw")
         
 
         self.fr_exhibit = tk.Frame(self.canvas, bg='blue', height=2000)
@@ -81,6 +100,7 @@ class main_Window ():
                 label_name = tk.Label(master=frame, text=f"Row {i}\nColumn {j}")
                 label_name.pack()
                 self.img_names = np.append(self.img_names, label_name)
+        self.focus = self.img_frames[0]
 
     def refresh_img(self):
         index = 0
@@ -127,15 +147,19 @@ class main_Window ():
 
     def leave(self, index):
         print("Leave: " + str(index) + "\n")
-        self.img_frames[index].configure(bg='yellow')
+        if not self.focus == self.img_frames[index]:
+            self.img_frames[index].configure(bg='yellow')
 
     def click(self, index):
         print("Click: " + str(index))
-        self.img_frames[index].configure(bg='red', relief=tk.FLAT,)
+        self.focus.configure(bg='yellow', relief=tk.FLAT)
+        self.focus = self.img_frames[index]
+        self.img_frames[index].configure(bg='red', relief=tk.FLAT)
+        self.display_info['title'].configure(text="title: " + str(self.img_info[index]['ID']))
 
     def release(self, index):
         print("Release: " + str(index))
-        self.img_frames[index].configure(bg='green', relief=tk.RAISED,)
+        #self.img_frames[index].configure(bg='green', relief=tk.RAISED,)
 
     def click_double(self, index):
         print("Double click: " + str(index))
