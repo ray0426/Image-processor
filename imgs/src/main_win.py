@@ -100,7 +100,15 @@ class main_Window ():
                 label_name = tk.Label(master=frame, text=f"Row {i}\nColumn {j}")
                 label_name.pack()
                 self.img_names = np.append(self.img_names, label_name)
+
         self.focus = self.img_frames[0]
+        self.img_frames[0].configure(bg='red', relief=tk.FLAT)
+        self.display_info['title'].configure(text="title: " + str(self.img_info[0]['title']))
+        self.display_info['painter'].configure(text="painter: " + str(self.img_info[0]['painter']))
+        self.display_info['paint_time'].configure(text="paint time: " + str(self.img_info[0]['paint_time']).split(' ')[0])
+        self.display_info['dl_time'].configure(text="dl time: " + str(self.img_info[0]['download_time']).split(' ')[0])
+        self.display_info['id_page'].configure(text="id/page: " + str(self.img_info[0]['img_ID']) + 
+                                               "-" + str(self.img_info[0]['page']))
 
     def refresh_img(self):
         index = 0
@@ -111,6 +119,7 @@ class main_Window ():
             self.imgs[index].configure(image=photo, height=150, width=160)
             self.imgs[index].image = photo
             self.img_frames[index].grid()
+            self.img_names[index].configure(text=img_info_single['title'])
             index = index + 1
 
         for i in range(index, 16):
@@ -143,7 +152,8 @@ class main_Window ():
 
     def enter(self, index):
         print("Enter: " + str(index))
-        self.img_frames[index].configure(bg='green')
+        if self.focus != self.img_frames[index]:
+            self.img_frames[index].configure(bg='green')
 
     def leave(self, index):
         print("Leave: " + str(index) + "\n")
@@ -155,7 +165,13 @@ class main_Window ():
         self.focus.configure(bg='yellow', relief=tk.FLAT)
         self.focus = self.img_frames[index]
         self.img_frames[index].configure(bg='red', relief=tk.FLAT)
-        self.display_info['title'].configure(text="title: " + str(self.img_info[index]['ID']))
+        self.display_info['title'].configure(text="title: " + str(self.img_info[index]['title']))
+        self.display_info['painter'].configure(text="painter: " + str(self.img_info[index]['painter']))
+        self.display_info['paint_time'].configure(text="paint time: " + str(self.img_info[index]['paint_time']).split(' ')[0])
+        self.display_info['dl_time'].configure(text="dl time: " + str(self.img_info[index]['download_time']).split(' ')[0])
+        self.display_info['id_page'].configure(text="id/page: " + str(self.img_info[index]['img_ID']) + 
+                                               "-" + str(self.img_info[index]['page']))
+
 
     def release(self, index):
         print("Release: " + str(index))
