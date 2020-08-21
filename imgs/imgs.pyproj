@@ -23,8 +23,6 @@
   <ItemGroup>
     <Compile Include="craw\crawpixiv.py" />
     <Compile Include="craw\crawpixiv.py" />
-    <Compile Include="craw\others.py" />
-    <Compile Include="craw\test_craw1.py" />
     <Compile Include="src\imgs.py" />
     <Compile Include="src\img_data.py">
       <SubType>Code</SubType>
@@ -50,7 +48,7 @@
     <Compile Include="src\test_file\test_scrolable.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\test_file\test_tags.py">
+    <Compile Include="src\tag_data.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
@@ -62,7 +60,6 @@
     <Folder Include="src\test_file\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="craw\information" />
     <Content Include="data.json" />
     <Content Include="data_format.json" />
     <Content Include="data_tags.json">
