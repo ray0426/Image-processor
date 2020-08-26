@@ -2,10 +2,14 @@ import requests
 from bs4 import BeautifulSoup as bs
 import json
 import time
+import os
+import numpy as np
+from tag_data import Img_Tag as Tag
+
 
 class Picture():
     '''use for recording data about the pic on the website'''
-    def __init__(self, url = ""):
+    def __init__(self, url = "", path = "./imgs/craw/pic", detail = dict()):
         '''give url and record data'''
         self.pic = url[-8:]
         self.page = "p0"
@@ -15,6 +19,8 @@ class Picture():
         self.tag = []
         self.paint_time = ""
         self.download_time = ""
+        self.path = path
+        self.detail = detail
 
         if url:
             req = requests.get(url)
@@ -22,17 +28,36 @@ class Picture():
                 soup = bs(req.text,"html.parser")
                 self.setting(soup)
             self.get_info('easy')
-        
+
+    def dict_type(self):
+        info = {
+            "pic_ID": self.pic,
+            "page": self.page,
+            "src": self.path + self.pic + "_" + self.page + ".png",
+            "format": "png",
+            "download_url": self.place,
+            "title": self.title,
+            "tags": self.tag,
+            "paint_time": self.paint_time,
+            "download_time": self.download_time
+        }
+
+        for key, ele in self.detail.items:
+            info[key] = ele
+
+        return info
+
     def get_info(self, mode = 'all'):
         if self.place:
             if mode == 'all':
-                print("pic",self.pic)
+                print("pic",self.pic," ",self.page)
                 print("title:",self.title)
                 print("painter:",self.painter)
                 print("place:",self.place)
                 print("tag:",self.tag)
                 print("paint_time",self.paint_time)
                 print("download_time",self.download_time)
+                print("path",self.path)
                 print("")
             if mode == 'easy':
                 print("pic",self.pic)
@@ -49,6 +74,7 @@ class Picture():
         self.tag = copypic.tag
         self.paint_time = copypic.paint_time
         self.download_time = copypic.download_time
+        self.path = copypic.path
 
     def is_empty(self):
         if not self.place:
@@ -60,7 +86,7 @@ class Picture():
         self.set_place(soup)
         self.set_tag(soup)
         self.set_paint_time(soup)
-        self.set_download_time(soup)
+        self.set_download_time()
 
     def set_title(self, soup):
         self.title = soup.title.string[1:-8]
@@ -100,15 +126,26 @@ class Picture():
                 if ("uploadDate" in s):
                     self.paint_time = s[14:-7]
     
-    def set_download_time(self, soup):        
+    def set_download_time(self):        
         self.download_time = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime()) 
 
     def set_page(self, page):
         self.page = "p" + str(page)
 
+    def set_path(self, path):
+        self.path = path
+
+    def set_detail(self, detail):
+        for key, ele in detail.items:
+            self.detail[key] = ele
+
+    def add_tag(self, tags):
+        self.tag.extend(tags)
+
+
 class Pixiv():
     '''use for crawing on Pixiv'''
-    def __init__(self, path = "./imgs/craw/pic", pixiv_id = "", password = ""):
+    def __init__(self, path = "./imgs/craw/pic", pixiv_id = "", password = "", mode = 0):
         self.url = "https://www.pixiv.net"
         self.path = path
         self.head = {
@@ -120,9 +157,38 @@ class Pixiv():
             'pass': password
         }
 
-        self.req = None
-        self.info = dict()
-    
+        self.req = None     #now request website, use for referer
+        self.info = dict()  #put class Picture in it
+        
+        self.tag = Tag()    #Tag class
+        self.tag.load_tags()
+
+        self.mode = mode
+        self.mode_we_have = {
+            0 : "get_pic_then_save" ,
+            1 : "call_then_save"
+        }
+        self.mode_depend = ["saving"]
+
+        self.work_list = np.empty((len(self.mode_we_have)+1)*len(self.mode_depend))
+        self.mode_setting()
+        
+    def set_mode(self, mode):
+        if (mode in self.mode_we_have):
+            self.mode = mode
+        else:
+            print("no such type")
+
+    def get_mode(self):
+        print("current mode",self.mode)
+        print("the modes")
+        print(self.mode_we_have)
+        print("\n")
+        print(self.work_list)
+
+    def mode_setting(self):
+        pass
+
     def change_path(self, path):
         self.path = path
 
@@ -146,6 +212,12 @@ class Pixiv():
         #self.info[key] = pic
         return name
 
+    def write_info(self, pics):
+        for pic in pics:
+            self.tag.tags_to_id(pic.tag)
+            # write in json data pool?
+        self.tag.write_tags()
+
     def get_pic(self, locate, tags = []):
         '''give the website or the number of the pic, 
             if the tags are included in pic tags,
@@ -155,22 +227,23 @@ class Pixiv():
         
         self.head["referer"] = url
 
-        pic = Picture(url)
-        picname = self.get_pic_name(pic)             
-        url_front_pic = pic.place[:-16]
-        url_back_pic = pic.place[-15:]
+        pic = []
+        pic.append(Picture(url,self.path)) 
+        picname = self.get_pic_name(pic[-1])             
+        url_front_pic = pic[-1].place[:-16]
+        url_back_pic = pic[-1].place[-15:]
 
         i = 0
         do = True
         
         for tag in tags:
-            if not tag in pic.tag:
+            if not tag in pic[-1].tag:
                 do = False
 
         req_pic = requests.get(url_front_pic + str(i) + url_back_pic, headers = self.head)
                 
         while do and ("403 Forbidden" and "404 Not Found" not in req_pic.text):
-            self.info[picname] = pic   #add new info
+            self.info[picname] = pic[-1]   #add new info
 
             img = req_pic.content
             
@@ -179,14 +252,20 @@ class Pixiv():
                 f.write(img)
             
             i = i + 1
-            pic.set_page(i)     #next page
+            pic_buffer = Picture()
+            pic_buffer.copy(pic[-1])
+            pic_buffer.set_page(i)
+            pic_buffer.set_download_time()
+            pic.append(pic_buffer)     #next page
 
-            picname = self.get_pic_name(pic)
+            picname = self.get_pic_name(pic[-1])
             req_pic = requests.get(url_front_pic + str(i) + url_back_pic, headers = self.head)
             #change data
 
         print("for", i ,"pages")
         print("")
+
+        self.write_info(pic)
 
         self.head["referer"] = self.url
 
@@ -264,10 +343,6 @@ class Pixiv():
         sel_one = soup_init.select("meta#meta-preload-data")
         sel_two = sel_one[0]["content"].split(',')
 
-    #    for sel in sel_two:
-    #        try: print(int(sel.split('"')[1]))
-    #        except: pass
-
         hr_auth = []
         for sel in sel_two:
             try:
@@ -282,11 +357,16 @@ class Pixiv():
 
         
 if __name__ == '__main__':
-    p = Pixiv()
+    print(os.path.abspath('.'))
+    #input()
+    #p = Pixiv()
+    #p.get_mode()
     #p.get_pic(83113557, ["魔法少女まどか☆マギカ","星空ドレス"])
     #p.run_rank(date = 20200725, limit = 1)
-    p.run_author(11491793)
+    #p.run_author(11491793)
     #print(p.info)
+    #for pic in p.info:
+    #    p.info[pic].get_info()
 
             
 
