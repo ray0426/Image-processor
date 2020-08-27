@@ -5,11 +5,12 @@ import time
 import os
 import numpy as np
 from tag_data import Img_Tag as Tag
+from img_data import Img_Data as Img
 
 
 class Picture():
     '''use for recording data about the pic on the website'''
-    def __init__(self, url = "", path = "./imgs/craw/pic", detail = dict()):
+    def __init__(self, url = "", path = "./pixiv", detail = dict()):
         '''give url and record data'''
         self.pic = url[-8:]
         self.page = "p0"
@@ -21,6 +22,7 @@ class Picture():
         self.download_time = ""
         self.path = path
         self.detail = detail
+        self.need_record = True
 
         if url:
             req = requests.get(url)
@@ -31,7 +33,7 @@ class Picture():
 
     def dict_type(self):
         info = {
-            "pic_ID": self.pic,
+            "img_ID": self.pic,
             "page": self.page,
             "src": self.path + self.pic + "_" + self.page + ".png",
             "format": "png",
@@ -41,10 +43,10 @@ class Picture():
             "paint_time": self.paint_time,
             "download_time": self.download_time
         }
-
-        for key, ele in self.detail.items:
+        
+        for key, ele in self.detail.items():
             info[key] = ele
-
+        print(info)
         return info
 
     def get_info(self, mode = 'all'):
@@ -142,10 +144,9 @@ class Picture():
     def add_tag(self, tags):
         self.tag.extend(tags)
 
-
 class Pixiv():
     '''use for crawing on Pixiv'''
-    def __init__(self, path = "./imgs/craw/pic", pixiv_id = "", password = "", mode = 0):
+    def __init__(self, path = "./pixiv", pixiv_id = "", password = "", mode = 0):
         self.url = "https://www.pixiv.net"
         self.path = path
         self.head = {
@@ -163,31 +164,37 @@ class Pixiv():
         self.tag = Tag()    #Tag class
         self.tag.load_tags()
 
+        self.db = Img()
+
         self.mode = mode
         self.mode_we_have = {
             0 : "get_pic_then_save" ,
-            1 : "call_then_save"
+            1 : "call_then_save" ,
+            2 : "task_fin_save"
         }
-        self.mode_depend = ["saving"]
-
-        self.work_list = np.empty((len(self.mode_we_have)+1)*len(self.mode_depend))
+        self.mode_depend = ["load save"]
+        self.work_list = np.zeros((len(self.mode_we_have) , len(self.mode_depend)))
         self.mode_setting()
-        
-    def set_mode(self, mode):
-        if (mode in self.mode_we_have):
-            self.mode = mode
-        else:
-            print("no such type")
+        #usage : self.work_list
 
+#mode part
     def get_mode(self):
         print("current mode",self.mode)
         print("the modes")
         print(self.mode_we_have)
-        print("\n")
+        print()
+        print(self.mode_depend)
         print(self.work_list)
 
-    def mode_setting(self):
-        pass
+    def mode_setting(self): 
+        self.work_list[0][0] = 1
+
+#changing part
+    def change_mode(self, mode):
+        if (mode in self.mode_we_have):
+            self.mode = mode
+        else:
+            print("no such type")
 
     def change_path(self, path):
         self.path = path
@@ -195,6 +202,14 @@ class Pixiv():
     def change_loggin(self, pixiv_id, password):
         self.postdata['pixiv_id'] = pixiv_id
         self.postdata['pass'] = password
+#partial functions for get pic
+    def next_page(self, picname, i):
+        """give i+1, return i+n where i+n isn't loaded before"""
+        while self.db.Search(picname[:-3], 'p' + str(i)):
+            print("page", i ,"already load")
+            int(i)
+            i += 1
+        return i
 
     def trans_number(self, locate):
         try:
@@ -211,13 +226,22 @@ class Pixiv():
         name = picname + "_" + picpage
         #self.info[key] = pic
         return name
-
-    def write_info(self, pics):
+#write in json
+    def writetag(self, pics):
         for pic in pics:
-            self.tag.tags_to_id(pic.tag)
+            pic.tag = self.tag.tags_to_id(pic.tag)
             # write in json data pool?
         self.tag.write_tags()
 
+    def writeinfo(self):
+        for pic in self.info.values():
+            if pic.need_record:
+                self.db.data_add(pic.dict_type())
+                pic.need_record = False
+
+        self.db.write_data()
+
+#get pic part
     def get_pic(self, locate, tags = []):
         '''give the website or the number of the pic, 
             if the tags are included in pic tags,
@@ -233,7 +257,7 @@ class Pixiv():
         url_front_pic = pic[-1].place[:-16]
         url_back_pic = pic[-1].place[-15:]
 
-        i = 0
+        i = self.next_page(picname, 0)
         do = True
         
         for tag in tags:
@@ -243,51 +267,33 @@ class Pixiv():
         req_pic = requests.get(url_front_pic + str(i) + url_back_pic, headers = self.head)
                 
         while do and ("403 Forbidden" and "404 Not Found" not in req_pic.text):
-            self.info[picname] = pic[-1]   #add new info
+            nowpic = pic[-1]
 
+            self.info[picname] = nowpic   #add new info
             img = req_pic.content
-            
             filename = picname +'.png'            
             with open (self.path + '/' + filename , 'wb') as f:     #dl pic
                 f.write(img)
             
-            i = i + 1
+            i = self.next_page(picname, i + 1)
             pic_buffer = Picture()
-            pic_buffer.copy(pic[-1])
+            pic_buffer.copy(nowpic)
             pic_buffer.set_page(i)
             pic_buffer.set_download_time()
             pic.append(pic_buffer)     #next page
 
-            picname = self.get_pic_name(pic[-1])
+            picname = self.get_pic_name(nowpic)
             req_pic = requests.get(url_front_pic + str(i) + url_back_pic, headers = self.head)
             #change data
 
         print("for", i ,"pages")
         print("")
 
-        self.write_info(pic)
+        self.writetag(pic)
+        if self.work_list[self.mode][0]:
+            self.writeinfo()
 
         self.head["referer"] = self.url
-
-#    def run_rank_old(self, mode = None, content = None, date = None, tags = []):
-#        '''dl pic on the rank. now can only dl for one page'''
-#        url = self.url + "/ranking.php"
-#        params = {'mode' : mode , 'content' : content , 'date' : date}
-#
-#        req_rank = requests.get(url, params = params)
-#        soup_rank = bs(req_rank.text,"html.parser")
-#        sel_rank = soup_rank.select("div.ranking-image-item a")
-#
-#        hr_rank = []
-#        for s in sel_rank:
-#            hr_rank.append(s["href"])
-#
-#        for hr in hr_rank:
-#            if '/artworks/' in hr:
-#                locate = hr[-8:]
-#                #print(hr)
-#                self.get_pic(locate, tags)
-#                time.sleep(1)
     
     def run_list(self, piclist, tags = []):
         for hr in piclist:
@@ -353,15 +359,34 @@ class Pixiv():
         
         self.run_list(hr_auth, tags = tags)
         
-            
+#    def run_rank_old(self, mode = None, content = None, date = None, tags = []):
+#        '''dl pic on the rank. now can only dl for one page'''
+#        url = self.url + "/ranking.php"
+#        params = {'mode' : mode , 'content' : content , 'date' : date}
+#
+#        req_rank = requests.get(url, params = params)
+#        soup_rank = bs(req_rank.text,"html.parser")
+#        sel_rank = soup_rank.select("div.ranking-image-item a")
+#
+#        hr_rank = []
+#        for s in sel_rank:
+#            hr_rank.append(s["href"])
+#
+#        for hr in hr_rank:
+#            if '/artworks/' in hr:
+#                locate = hr[-8:]
+#                #print(hr)
+#                self.get_pic(locate, tags)
+#                time.sleep(1)    
 
         
 if __name__ == '__main__':
     print(os.path.abspath('.'))
     #input()
-    #p = Pixiv()
+    p = Pixiv()
     #p.get_mode()
-    #p.get_pic(83113557, ["魔法少女まどか☆マギカ","星空ドレス"])
+    p.get_pic(83113557, ["魔法少女まどか☆マギカ","星空ドレス"])
+    #print(p.db.data)
     #p.run_rank(date = 20200725, limit = 1)
     #p.run_author(11491793)
     #print(p.info)

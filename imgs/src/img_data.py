@@ -13,16 +13,20 @@ class Img_Data ():
 
     def load_data(self):
         print("load image data")
-        with open('data.json', 'r') as f:
+        with open('data.json', 'r', encoding='utf-8') as f:
             self.data = json.load(f)
         print("load image data success!")
         return self.data
 
-#    def write_data(self):
-#        print("write data")
-#        with open('data.json', 'w', encoding='utf-8') as f:
-#            json.dump(self.data, f, indent=4)
-#        print("write data success!")
+    def write_data(self):
+        print("write data")
+        with open('data.json', 'w', encoding='utf-8') as f:
+            json.dump(self.data, f, indent=4)
+        print("write data success!")
+
+    def data_add(self, info):
+        if type(info) == dict:
+            self.data.append(info)
 
 #    def scan_imgs(self):
 #        matches = []
@@ -53,7 +57,10 @@ class Img_Data ():
 #        print("reload success!")
 
     def Search(self, ID, page):
-        return [data for data in self.data if data['img_ID'] == ID and data['page'] == page][0]
+        try:
+            return [data for data in self.data if data['img_ID'] == ID and data['page'] == page][0]
+        except:
+            return None
 
 def time_now():
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
