@@ -5,22 +5,31 @@ import collections
 import time
 
 class Img_Data ():
-    def __init__(self):
-        self.load_data()
+    def __init__(self, datapath = "data.json"):
         self.imgPath = ".\pics"
+        self.dataPath = datapath
+        self.load_data()
 #        self.exts = ['*.jpg','*.jpeg','*.png']
         
 
     def load_data(self):
         print("load image data")
-        with open('data.json', 'r', encoding='utf-8') as f:
-            self.data = json.load(f)
-        print("load image data success!")
+        if os.path.isfile(self.dataPath):
+            with open(self.dataPath, 'r', encoding='utf-8') as f:
+                self.data = json.load(f)
+            print("load image data success!")
+        else:
+            print("load file fail!!")
+            print("creating file: " + str(self.dataPath))
+            with open(self.dataPath, 'w', encoding='utf-8') as f:
+                f.write("[\n\n]")
+            print("create file success!")
+            self.data = []
         return self.data
 
     def write_data(self):
         print("write data")
-        with open('data.json', 'w', encoding='utf-8') as f:
+        with open(self.dataPath, 'w', encoding='utf-8') as f:
             json.dump(self.data, f, indent=4)
         print("write data success!")
 

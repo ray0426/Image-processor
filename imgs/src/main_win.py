@@ -112,13 +112,14 @@ class main_Window ():
                 label_name.pack()
                 self.img_names = np.append(self.img_names, label_name)
 
-        self.focus = self.img_frames[0]
-        self.img_frames[0].configure(bg='red', relief=tk.FLAT)
-        self.display_info['title'].configure(text="title: " + str(self.img_info[0]['title']))
-        self.display_info['painter'].configure(text="painter: " + str(self.img_info[0]['painter']))
-        self.display_info['paint_time'].configure(text="paint time: " + str(self.img_info[0]['paint_time']).split(' ')[0])
-        self.display_info['dl_time'].configure(text="dl time: " + str(self.img_info[0]['download_time']).split(' ')[0])
-        self.display_info['id_page'].configure(text="id/page: " + str(self.img_info[0]['img_ID']) + 
+        if len(self.img_info) != 0:
+            self.focus = self.img_frames[0]
+            self.img_frames[0].configure(bg='red', relief=tk.FLAT)
+            self.display_info['title'].configure(text="title: " + str(self.img_info[0]['title']))
+            self.display_info['painter'].configure(text="painter: " + str(self.img_info[0]['painter']))
+            self.display_info['paint_time'].configure(text="paint time: " + str(self.img_info[0]['paint_time']).split(' ')[0])
+            self.display_info['dl_time'].configure(text="dl time: " + str(self.img_info[0]['download_time']).split(' ')[0])
+            self.display_info['id_page'].configure(text="id/page: " + str(self.img_info[0]['img_ID']) + 
                                                "-" + str(self.img_info[0]['page']))
         self.refresh_img()
         

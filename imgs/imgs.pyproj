@@ -23,6 +23,7 @@
   <ItemGroup>
     <Compile Include="craw\crawpixiv.py" />
     <Compile Include="craw\crawpixiv.py" />
+    <Compile Include="src\crawpixiv.py" />
     <Compile Include="src\imgs.py" />
     <Compile Include="src\img_data.py">
       <SubType>Code</SubType>
@@ -60,7 +61,10 @@
     <Folder Include="src\test_file\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="data.json" />
+    <Content Include="data%28test%29.json" />
+    <Content Include="data.json">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="data_format.json" />
     <Content Include="data_tags.json">
       <SubType>Code</SubType>
