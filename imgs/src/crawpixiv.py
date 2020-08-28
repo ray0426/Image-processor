@@ -381,7 +381,7 @@ class Pixiv():
 
         
 if __name__ == '__main__':
-    print(os.path.abspath('.'))
+    #print(os.path.abspath('.'))
     #input()
     p = Pixiv()
     #p.get_mode()
