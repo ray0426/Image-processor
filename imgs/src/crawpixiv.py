@@ -258,6 +258,7 @@ class Pixiv():
         url_back_pic = pic[-1].place[-15:]
 
         i = self.next_page(picname, 0)
+        #print(i)
         do = True
         
         for tag in tags:
@@ -267,22 +268,21 @@ class Pixiv():
         req_pic = requests.get(url_front_pic + str(i) + url_back_pic, headers = self.head)
                 
         while do and ("403 Forbidden" and "404 Not Found" not in req_pic.text):
-            nowpic = pic[-1]
-
-            self.info[picname] = nowpic   #add new info
+            self.info[picname] = pic[-1]   #add new info
             img = req_pic.content
             filename = picname +'.png'            
             with open (self.path + '/' + filename , 'wb') as f:     #dl pic
                 f.write(img)
             
             i = self.next_page(picname, i + 1)
+            #print(i)
             pic_buffer = Picture()
-            pic_buffer.copy(nowpic)
+            pic_buffer.copy(pic[-1])
             pic_buffer.set_page(i)
             pic_buffer.set_download_time()
             pic.append(pic_buffer)     #next page
 
-            picname = self.get_pic_name(nowpic)
+            picname = self.get_pic_name(pic[-1])
             req_pic = requests.get(url_front_pic + str(i) + url_back_pic, headers = self.head)
             #change data
 
@@ -385,7 +385,8 @@ if __name__ == '__main__':
     #input()
     p = Pixiv()
     #p.get_mode()
-    p.get_pic(83113557, ["魔法少女まどか☆マギカ","星空ドレス"])
+    #p.get_pic(83113557, ["魔法少女まどか☆マギカ","星空ドレス"])
+    p.get_pic(82928832)
     #print(p.db.data)
     #p.run_rank(date = 20200725, limit = 1)
     #p.run_author(11491793)
