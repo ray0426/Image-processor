@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 from PIL import Image, ImageTk
 import numpy as np
 import tag_data
@@ -15,16 +16,17 @@ class main_Window ():
 
     def create_window(self):
         self.window = tk.Tk()
+        self.window.overrideredirect(1)
         self.window.title('Img Player')
         self.window.geometry('1024x600')
         self.window.minsize(1200, 660)
         #self.window.maxsize(1200, 660)
         self.window.rowconfigure(0, minsize=330, weight=1) # height (row height)
         self.window.rowconfigure(1, minsize=330, weight=1) # height (row height)
-        self.window.columnconfigure(0, minsize=200)  # width (column width)
-        self.window.columnconfigure(1, minsize=900, weight=1)  # width (column width)
-        self.window.columnconfigure(2, minsize=2, weight=1)  # width (column width)
-        self.create_menu()
+        self.window.columnconfigure(0, minsize=250)  # width (column width)
+        self.window.columnconfigure(1, minsize=930, weight=0)  # width (column width)
+        #self.window.columnconfigure(2, minsize=2, weight=1)  # width (column width)
+        #self.create_menu()
         
         self.create_filter()
         self.create_info()
@@ -54,17 +56,24 @@ class main_Window ():
         self.display_info['tags'] = tk.Label(master=self.fr_info, font=("TkDefaultFont", 14), text="tags: ")
         self.display_info['tags'].grid(row=5, column=0, ipadx=1, ipady=1, padx=4, pady=2, sticky="new")
 
-        self.tags_canvas = tk.Canvas(self.fr_info, bg='#FFFFFF',scrollregion=(0,0,0,10))
-        self.tags_vbar = tk.Scrollbar(self.fr_info, orient='vertical')
-        self.tags_vbar.grid(row=5, column=2, rowspan=2, padx=4, pady=2, sticky="nesw")
+        self.tags_canvas = tk.Canvas(self.fr_info, bg='#FFFFFF',scrollregion=(0,0,500,0))
+        self.tags_vbar = ttk.Scrollbar(self.fr_info, orient='vertical')
+        self.tags_vbar.grid(row=5, column=2, sticky="nesw")
         self.tags_vbar.config(command=self.tags_canvas.yview)
-        self.tags_canvas.config(width=125,height=100)
+        self.tags_canvas.config(width=165,height=150)
         self.tags_canvas.config(yscrollcommand=self.tags_vbar.set) #xscrollcommand=hbar.set, yscrollcommand=vbar.set)
-        self.tags_canvas.grid(row=5, column=1, ipadx=1, ipady=1, padx=4, pady=2, sticky="w")
+        self.tags_canvas.grid(row=5, column=1, sticky="w")
         
 
-        #self.tags_list = tk.Frame(self.tags_canvas, bg='blue', height=2000)
-        #self.tags_canvas.create_window((0, 0), anchor='nw', window=self.tags_list)
+        self.tags_list = tk.Frame(self.tags_canvas, bg='green')
+        self.tags_list.configure(width=165, height=500)
+        self.tags_canvas.create_window((0, 0), anchor='nw', window=self.tags_list)
+        self.tags_list.bind(
+            "<Configure>",
+            lambda e: self.tags_canvas.configure(
+                scrollregion=self.tags_canvas.bbox("all")
+            )
+        )
 
     def create_menu(self):
         self.menu = tk.Menu(self.window)
@@ -74,23 +83,29 @@ class main_Window ():
         self.menu.add_cascade(label='File', menu=self.new_item)
 
     def create_exhibit(self): #tkinter.Frame
-        self.canvas = tk.Canvas(self.window, bg='#FFFFFF',scrollregion=(0,0,00,600))
+        self.canvas = tk.Canvas(self.window, bg='blue', highlightthickness=0)
         self.vbar = tk.Scrollbar(self.window, orient='vertical')
         self.vbar.grid(row=0, column=2, rowspan=2, sticky="nesw")
         self.vbar.config(command=self.canvas.yview)
-        self.canvas.config(width=300,height=300)
+        self.canvas.config(width=930,height=660)
         self.canvas.config(yscrollcommand=self.vbar.set) #xscrollcommand=hbar.set, yscrollcommand=vbar.set)
-        self.canvas.grid(row=0, column=1, rowspan=2, sticky="nesw")
+        self.canvas.grid(row=0, column=1, rowspan=2, padx=(3, 0), pady=3, sticky="nesw")
         
 
-        self.fr_exhibit = tk.Frame(self.canvas, bg='blue', height=2000)
-        self.canvas.create_window((0, 0), anchor='nw', window=self.fr_exhibit)
+        self.fr_exhibit = tk.Frame(self.canvas, bg='blue')
+        self.canvas.create_window((3, 3), anchor='nw', window=self.fr_exhibit)
+        self.fr_exhibit.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(
+                scrollregion=self.canvas.bbox("all")
+            )
+        )
         #self.fr_exhibit.pack(side='left', expand=True, fill='both')
         #self.refresh_exhibit()
         self.img_frames = np.empty((0), dtype=tk.Frame)
         self.imgs = np.empty((0), dtype=tk.Label)
         self.img_names = np.empty((0), dtype=tk.Label)
-        for i in range(100):
+        for i in range(10):
             self.fr_exhibit.rowconfigure(i, minsize=220)
             for j in range(5):
                 self.fr_exhibit.columnconfigure(j, minsize=180)
@@ -100,7 +115,7 @@ class main_Window ():
                     borderwidth=1,
                     bg='yellow'
                 )
-                frame.grid(row=i, column=j, ipadx=5, ipady=5, padx=5, pady=5, sticky="nw")
+                frame.grid(row=i, column=j, ipadx=5, ipady=5, padx=(8, 0))
                 frame.grid_remove()
                 self.img_frames = np.append(self.img_frames, frame)
 
