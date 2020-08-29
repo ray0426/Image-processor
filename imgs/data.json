@@ -2,9 +2,11 @@
     {
         "img_ID": "83113557",
         "page": "p0",
-        "src": "./pixiv83113557_p0.png",
+        "painter": "\uffe6ANKE",
+        "painter_ID": "24218478",
+        "src": "./pixiv/83113557_p0.png",
         "format": "png",
-        "download_url": "https://i.pximg.net/img-master/img/2020/07/21/03/46/24/83113557_p0_master1200.jpg",
+        "url": "https://i.pximg.net/img-master/img/2020/07/21/03/46/24/83113557_p0_master1200.jpg",
         "title": "\u9b54\u6cd5\u5c11\u5973\u307e\u3069\u304b\u2606\u30de\u30ae\u30ab madoka - \uffe6ANKE\u306e\u30a4\u30e9\u30b9\u30c8",
         "tags": [
             8,
@@ -19,6 +21,6 @@
             17
         ],
         "paint_time": "2020-07-20T18:46:24",
-        "download_time": "2020-08-28T12:06:29"
+        "download_time": "2020-08-29T15:14:47"
     }
 ]
