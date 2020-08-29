@@ -31,6 +31,9 @@
     <Compile Include="src\main_win.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\test_file\test_canvas_scrolling.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="src\test_file\test_GUI.py">
       <SubType>Code</SubType>
     </Compile>
@@ -61,6 +64,7 @@
     <Folder Include="src\test_file\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="data %28test%29.json" />
     <Content Include="data%28test%29.json" />
     <Content Include="data.json">
       <SubType>Code</SubType>
