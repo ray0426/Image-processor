@@ -301,6 +301,7 @@ class Pixiv():
     
     def run_list(self, piclist, tags = []):
         for hr in piclist:
+            print(hr)
             try:
                 num_hr = int(hr)
                 self.get_pic(num_hr ,tags = tags)
@@ -308,7 +309,7 @@ class Pixiv():
             except:
                 print("we got wrong url", hr)
 
-    def run_rank(self, tags = [], mode = None, content = None, date = None, page = float('inf'), limit = float('inf')):
+    def run_rank(self, tags = [], mode = None, content = None, date = None, limit = float('inf')):
         '''dl pic on the rank.
             page : dl for how many pages
             limit : dl for how many pic'''
@@ -319,25 +320,30 @@ class Pixiv():
         i = 0
         p = 1
         
-        while p <= page and i < limit:
+        while i < limit:
             params['p'] = str(p)
 
             try:
                 req_rank = requests.get(url, params = params)
             except:
-                if p == 1 :
+                if p == '1' :
                     print("maybe your params have wrong keyword")
                 else :
                     print("something unknown happened")
                 break
 
             js_rank = json.loads(req_rank.text)
+            #print(js_rank)
             
             for ele in js_rank['contents']:
+                #print(ele)
                 if i < limit:
                     place = ele['url']
+                    #print(place)
                     hr_rank.append(place.split('/')[-1][:-18])
                 i = i + 1
+                #print(hr_rank)
+
             p = p + 1
 
         self.run_list(hr_rank, tags = tags)
@@ -389,10 +395,10 @@ if __name__ == '__main__':
     #input()
     p = Pixiv()
     #p.get_mode()
-    p.get_pic(83113557, ["魔法少女まどか☆マギカ","星空ドレス"])
+    #p.get_pic(83113557, ["魔法少女まどか☆マギカ","星空ドレス"])
     #p.get_pic(82928832)
     #print(p.db.data)
-    #p.run_rank(date = 20200725, limit = 1)
+    p.run_rank(date = 20200725, limit = 3)
     #p.run_author(11491793)
     #print(p.info)
     #for pic in p.info:
