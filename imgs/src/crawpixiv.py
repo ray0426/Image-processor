@@ -16,6 +16,7 @@ class Picture():
         self.page = "p0"
         self.title = ""
         self.painter = ""
+        self.painter_id = ""
         self.place = ""
         self.tag = []
         self.paint_time = ""
@@ -35,9 +36,11 @@ class Picture():
         info = {
             "img_ID": self.pic,
             "page": self.page,
-            "src": self.path + self.pic + "_" + self.page + ".png",
+            "painter":self.painter,
+            "painter_ID": self.painter_id,
+            "src": self.path + "/" + self.pic + "_" + self.page + ".png",
             "format": "png",
-            "download_url": self.place,
+            "url": self.place,
             "title": self.title,
             "tags": self.tag,
             "paint_time": self.paint_time,
@@ -99,12 +102,11 @@ class Picture():
         if sel:
             for s in sel[0]["content"].split(','):
                 if ("authorId" in s):
-                    painter_id = s.lstrip('tags":[{authorId')[:-1]
+                    self.painter_id = s.lstrip('tags":[{authorId')[:-1]
                 if ("userName" in s):
                     self.painter = s[12:-2]
                 if self.painter:
                     break
-            self.painter = self.painter + "(id:" + painter_id + ")"
 
     def set_place(self, soup):
         sel = soup.select("meta#meta-preload-data")
@@ -175,6 +177,8 @@ class Pixiv():
         self.mode_depend = ["load save"]
         self.work_list = np.zeros((len(self.mode_we_have) , len(self.mode_depend)))
         self.mode_setting()
+
+        print("pixiv set successfully\n\n")
         #usage : self.work_list
 
 #mode part
@@ -385,8 +389,8 @@ if __name__ == '__main__':
     #input()
     p = Pixiv()
     #p.get_mode()
-    #p.get_pic(83113557, ["魔法少女まどか☆マギカ","星空ドレス"])
-    p.get_pic(82928832)
+    p.get_pic(83113557, ["魔法少女まどか☆マギカ","星空ドレス"])
+    #p.get_pic(82928832)
     #print(p.db.data)
     #p.run_rank(date = 20200725, limit = 1)
     #p.run_author(11491793)
