@@ -14,6 +14,7 @@ class main_Window ():
         self.create_window()
         self.window.mainloop()
 
+    ''' create the main window '''
     def create_window(self):
         self.window = tk.Tk()
         self.window.overrideredirect(1)
@@ -26,37 +27,42 @@ class main_Window ():
         self.window.columnconfigure(0, minsize=250)  # width (column width)
         self.window.columnconfigure(1, minsize=930, weight=0)  # width (column width)
         #self.window.columnconfigure(2, minsize=2, weight=1)  # width (column width)
+
         #self.create_menu()
-        
         self.create_filter()
         self.create_info()
         self.create_exhibit()
 
+    ''' left top tags filter and sort'''
     def create_filter(self):
         self.filter = tk.Frame(self.window, bg='yellow')
         self.filter.grid(row=0, column=0, padx=3, pady=3, sticky="nesw")
 
+    ''' create left bottom img information '''
     def create_info(self):
         self.fr_info = tk.Frame(self.window, bg='pink')
         self.fr_info.grid(row=1, column=0, padx=3, pady=3, sticky="nesw")
         #self.fr_info.columnconfigure(0, minsize=20, weight=1)
         #self.fr_info.columnconfigure(1, minsize=10, weight=1)
         #self.fr_info.columnconfigure(2, minsize=2, weight=1)
+
+        ''' create information label ''' 
         self.display_info = {}
-        self.display_info['title'] = tk.Label(master=self.fr_info, font=("TkDefaultFont", 14), text="title: ")
+        self.display_info['title'] = tk.Label(self.fr_info, font=("TkDefaultFont", 14), text="title: ")
         self.display_info['title'].grid(row=0, column=0, columnspan=3, ipadx=1, ipady=1, padx=4, pady=(4, 2), sticky="ew")
-        self.display_info['painter'] = tk.Label(master=self.fr_info, font=("TkDefaultFont", 14), text="painter: ")
+        self.display_info['painter'] = tk.Label(self.fr_info, font=("TkDefaultFont", 14), text="painter: ")
         self.display_info['painter'].grid(row=1, column=0, columnspan=3, ipadx=1, ipady=1, padx=4, pady=2, sticky="ew")
-        self.display_info['paint_time'] = tk.Label(master=self.fr_info, font=("TkDefaultFont", 14), text="paint time: ")
+        self.display_info['paint_time'] = tk.Label(self.fr_info, font=("TkDefaultFont", 14), text="paint time: ")
         self.display_info['paint_time'].grid(row=2, column=0, columnspan=3, ipadx=1, ipady=1, padx=4, pady=2, sticky="ew")
-        self.display_info['dl_time'] = tk.Label(master=self.fr_info, font=("TkDefaultFont", 14), text="dl time: ")
+        self.display_info['dl_time'] = tk.Label(self.fr_info, font=("TkDefaultFont", 14), text="dl time: ")
         self.display_info['dl_time'].grid(row=3, column=0, columnspan=3, ipadx=1, ipady=1, padx=4, pady=2, sticky="ew")
-        self.display_info['id_page'] = tk.Label(master=self.fr_info, font=("TkDefaultFont", 14), text="id/page: ")
+        self.display_info['id_page'] = tk.Label(self.fr_info, font=("TkDefaultFont", 14), text="id/page: ")
         self.display_info['id_page'].grid(row=4, column=0, columnspan=3, ipadx=1, ipady=1, padx=4, pady=2, sticky="ew")
-        self.display_info['tags'] = tk.Label(master=self.fr_info, font=("TkDefaultFont", 14), text="tags: ")
+        self.display_info['tags'] = tk.Label(self.fr_info, font=("TkDefaultFont", 14), text="tags: ")
         self.display_info['tags'].grid(row=5, column=0, ipadx=1, ipady=1, padx=4, pady=2, sticky="new")
 
-        self.tags_canvas = tk.Canvas(self.fr_info, bg='#FFFFFF',scrollregion=(0,0,500,0))
+        ''' create scrollable frame for tags '''
+        self.tags_canvas = tk.Canvas(self.fr_info, bg='blue', highlightthickness=0)
         self.tags_vbar = ttk.Scrollbar(self.fr_info, orient='vertical')
         self.tags_vbar.grid(row=5, column=2, sticky="nesw")
         self.tags_vbar.config(command=self.tags_canvas.yview)
@@ -66,7 +72,7 @@ class main_Window ():
         
 
         self.tags_list = tk.Frame(self.tags_canvas, bg='green')
-        self.tags_list.configure(width=165, height=500)
+        self.tags_list.configure(width=165)
         self.tags_canvas.create_window((0, 0), anchor='nw', window=self.tags_list)
         self.tags_list.bind(
             "<Configure>",
@@ -74,6 +80,8 @@ class main_Window ():
                 scrollregion=self.tags_canvas.bbox("all")
             )
         )
+
+        self.tag_labels = np.empty((0), dtype=tk.Label)
 
     def create_menu(self):
         self.menu = tk.Menu(self.window)
@@ -136,10 +144,26 @@ class main_Window ():
             self.display_info['dl_time'].configure(text="dl time: " + str(self.img_info[0]['download_time']).split(' ')[0])
             self.display_info['id_page'].configure(text="id/page: " + str(self.img_info[0]['img_ID']) + 
                                                "-" + str(self.img_info[0]['page']))
+        self.refresh_tags_list(self.img_info[0]['tags'])
+
         self.refresh_img()
         
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
         self.bind_display()
+
+    def refresh_tags_list(self, tags):
+        print(tags)
+        i = len(self.tag_labels)
+        j = 0
+        for tag in tags:
+            if i <= j:
+                tag_label = tk.Label(self.tags_list, font=("TkDefaultFont", 12), text=str(self.img_tag.find_by_id(tag)['tag_name']))
+                tag_label.grid(row=i, column=0, padx=5, pady=(2, 1), sticky="nw")
+                self.tag_labels = np.append(self.tag_labels, tag_label)
+                i = i + 1
+            else:
+                self.tag_labels[j].configure(text=str(self.img_tag.find_by_id(tag)['tag_name']))
+            j = j + 1
 
     def refresh_img(self):
         index = 0
@@ -202,6 +226,7 @@ class main_Window ():
         self.display_info['dl_time'].configure(text="dl time: " + str(self.img_info[index]['download_time']).split(' ')[0])
         self.display_info['id_page'].configure(text="id/page: " + str(self.img_info[index]['img_ID']) + 
                                                "-" + str(self.img_info[index]['page']))
+        self.refresh_tags_list(self.img_info[index]['tags'])
 
 
     def release(self, index):
