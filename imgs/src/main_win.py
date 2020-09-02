@@ -5,11 +5,11 @@ import numpy as np
 import tag_data
 
 class main_Window ():
-    def __init__(self, img_data):
+    def __init__(self, img_data = data.json):
         self.img_index = 0
         self.img_frames = ()
         self.img_info = img_data
-        self.img_tag = tag_data.Img_Tag()
+        self.img_tag = tag_data.Img_Tag("data_tags-temp - Copy.json")
         self.img_tag.load_tags()
         self.create_window()
         self.window.mainloop()
@@ -17,7 +17,7 @@ class main_Window ():
     ''' create the main window '''
     def create_window(self):
         self.window = tk.Tk()
-        self.window.overrideredirect(1)
+        #self.window.overrideredirect(1)
         self.window.title('Img Player')
         self.window.geometry('1024x600')
         self.window.minsize(1200, 660)
@@ -48,17 +48,17 @@ class main_Window ():
 
         ''' create information label ''' 
         self.display_info = {}
-        self.display_info['title'] = tk.Label(self.fr_info, font=("TkDefaultFont", 14), text="title: ")
+        self.display_info['title'] = tk.Label(self.fr_info, font=("TkDefaultFont", 11), text="title: ", wraplengt=200)
         self.display_info['title'].grid(row=0, column=0, columnspan=3, ipadx=1, ipady=1, padx=4, pady=(4, 2), sticky="ew")
-        self.display_info['painter'] = tk.Label(self.fr_info, font=("TkDefaultFont", 14), text="painter: ")
+        self.display_info['painter'] = tk.Label(self.fr_info, font=("TkDefaultFont", 11), text="painter: ")
         self.display_info['painter'].grid(row=1, column=0, columnspan=3, ipadx=1, ipady=1, padx=4, pady=2, sticky="ew")
-        self.display_info['paint_time'] = tk.Label(self.fr_info, font=("TkDefaultFont", 14), text="paint time: ")
+        self.display_info['paint_time'] = tk.Label(self.fr_info, font=("TkDefaultFont", 11), text="paint date: ")
         self.display_info['paint_time'].grid(row=2, column=0, columnspan=3, ipadx=1, ipady=1, padx=4, pady=2, sticky="ew")
-        self.display_info['dl_time'] = tk.Label(self.fr_info, font=("TkDefaultFont", 14), text="dl time: ")
+        self.display_info['dl_time'] = tk.Label(self.fr_info, font=("TkDefaultFont", 11), text="dl date: ")
         self.display_info['dl_time'].grid(row=3, column=0, columnspan=3, ipadx=1, ipady=1, padx=4, pady=2, sticky="ew")
-        self.display_info['id_page'] = tk.Label(self.fr_info, font=("TkDefaultFont", 14), text="id/page: ")
+        self.display_info['id_page'] = tk.Label(self.fr_info, font=("TkDefaultFont", 11), text="id/page: ")
         self.display_info['id_page'].grid(row=4, column=0, columnspan=3, ipadx=1, ipady=1, padx=4, pady=2, sticky="ew")
-        self.display_info['tags'] = tk.Label(self.fr_info, font=("TkDefaultFont", 14), text="tags: ")
+        self.display_info['tags'] = tk.Label(self.fr_info, font=("TkDefaultFont", 11), text="tags: ")
         self.display_info['tags'].grid(row=5, column=0, ipadx=1, ipady=1, padx=4, pady=2, sticky="new")
 
         ''' create scrollable frame for tags '''
@@ -113,7 +113,7 @@ class main_Window ():
         self.img_frames = np.empty((0), dtype=tk.Frame)
         self.imgs = np.empty((0), dtype=tk.Label)
         self.img_names = np.empty((0), dtype=tk.Label)
-        for i in range(10):
+        for i in range(100):
             self.fr_exhibit.rowconfigure(i, minsize=220)
             for j in range(5):
                 self.fr_exhibit.columnconfigure(j, minsize=180)
@@ -131,20 +131,14 @@ class main_Window ():
                 label_img.pack(pady=5)
                 self.imgs = np.append(self.imgs, label_img)
 
-                label_name = tk.Label(master=frame, text=f"Row {i}\nColumn {j}")
+                label_name = tk.Label(master=frame, text=f"Row {i}\nColumn {j}", font=("TkDefaultFont", 10), wraplengt=150)
                 label_name.pack()
                 self.img_names = np.append(self.img_names, label_name)
 
         if len(self.img_info) != 0:
             self.focus = self.img_frames[0]
             self.img_frames[0].configure(bg='red', relief=tk.FLAT)
-            self.display_info['title'].configure(text="title: " + str(self.img_info[0]['title']))
-            self.display_info['painter'].configure(text="painter: " + str(self.img_info[0]['painter']))
-            self.display_info['paint_time'].configure(text="paint time: " + str(self.img_info[0]['paint_time']).split(' ')[0])
-            self.display_info['dl_time'].configure(text="dl time: " + str(self.img_info[0]['download_time']).split(' ')[0])
-            self.display_info['id_page'].configure(text="id/page: " + str(self.img_info[0]['img_ID']) + 
-                                               "-" + str(self.img_info[0]['page']))
-        self.refresh_tags_list(self.img_info[0]['tags'])
+            self.refresh_tag_info(0)
 
         self.refresh_img()
         
@@ -155,15 +149,18 @@ class main_Window ():
         print(tags)
         i = len(self.tag_labels)
         j = 0
+        for k in range(i):
+            self.tag_labels[k].destroy()
         for tag in tags:
+            tag_label = tk.Label(self.tags_list, font=("TkDefaultFont", 10), text=str(self.img_tag.find_by_id(tag)['tag_name']))
+            tag_label.grid(row=j, column=0, padx=5, pady=(2, 1), sticky="nw")
             if i <= j:
-                tag_label = tk.Label(self.tags_list, font=("TkDefaultFont", 12), text=str(self.img_tag.find_by_id(tag)['tag_name']))
-                tag_label.grid(row=i, column=0, padx=5, pady=(2, 1), sticky="nw")
                 self.tag_labels = np.append(self.tag_labels, tag_label)
                 i = i + 1
             else:
-                self.tag_labels[j].configure(text=str(self.img_tag.find_by_id(tag)['tag_name']))
+                self.tag_labels[j] = tag_label
             j = j + 1
+        self.tags_canvas.yview_moveto(0.0)
 
     def refresh_img(self):
         index = 0
@@ -174,7 +171,15 @@ class main_Window ():
             self.imgs[index].configure(image=photo, height=150, width=160)
             self.imgs[index].image = photo
             self.img_frames[index].grid()
-            self.img_names[index].configure(text=img_info_single['title'])
+
+            ''' deal with character errror'''                                       ''' !!! This must process before download !!! '''
+            char_list = [img_info_single['title'][j] for j in range(len(img_info_single['title'])) 
+                         if ord(img_info_single['title'][j]) in range(65536)]
+            text = ''
+            for j in char_list:
+                text = text + j
+
+            self.img_names[index].configure(text=text)
             index = index + 1
 
         for i in range(index, 16):
@@ -186,6 +191,22 @@ class main_Window ():
             return [156, int(156 * size[1] / size[0])]
         else:
             return [int(156 * size[0] / size[1]), 156]
+
+    def refresh_tag_info(self, index):
+        ''' deal with character errror'''
+        char_list = [self.img_info[index]['title'][j] for j in range(len(self.img_info[index]['title'])) 
+                     if ord(self.img_info[index]['title'][j]) in range(65536)]
+        text = ''
+        for j in char_list:
+            text = text + j
+            
+        self.display_info['title'].configure(text="title: " + str(text))
+        self.display_info['painter'].configure(text="painter: " + str(self.img_info[index]['painter']))
+        self.display_info['paint_time'].configure(text="paint time: " + str(self.img_info[index]['paint_time']).split('T')[0])
+        self.display_info['dl_time'].configure(text="dl time: " + str(self.img_info[index]['download_time']).split('T')[0])
+        self.display_info['id_page'].configure(text="id/page: " + str(self.img_info[index]['img_ID']) + 
+                                               "-" + str(self.img_info[index]['page']))
+        self.refresh_tags_list(self.img_info[index]['tags'])
 
     def bind_display(self):
         for i in range(len(self.img_frames)):
@@ -220,13 +241,8 @@ class main_Window ():
         self.focus.configure(bg='yellow', relief=tk.FLAT)
         self.focus = self.img_frames[index]
         self.img_frames[index].configure(bg='red', relief=tk.FLAT)
-        self.display_info['title'].configure(text="title: " + str(self.img_info[index]['title']))
-        self.display_info['painter'].configure(text="painter: " + str(self.img_info[index]['painter']))
-        self.display_info['paint_time'].configure(text="paint time: " + str(self.img_info[index]['paint_time']).split(' ')[0])
-        self.display_info['dl_time'].configure(text="dl time: " + str(self.img_info[index]['download_time']).split(' ')[0])
-        self.display_info['id_page'].configure(text="id/page: " + str(self.img_info[index]['img_ID']) + 
-                                               "-" + str(self.img_info[index]['page']))
-        self.refresh_tags_list(self.img_info[index]['tags'])
+
+        self.refresh_tag_info(index)
 
 
     def release(self, index):

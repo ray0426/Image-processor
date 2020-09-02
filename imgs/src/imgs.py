@@ -5,7 +5,7 @@ import show_img
 import img_data
 import main_win
 
-img_data = img_data.Img_Data(datapath = "data(test).json")
+img_data = img_data.Img_Data(datapath = "data-temp - Copy.json")
 #img_data.reset()
 #print(img_data.data)
 #img_data.scan_imgs()
