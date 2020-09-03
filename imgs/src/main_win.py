@@ -5,7 +5,7 @@ import numpy as np
 import tag_data
 
 class main_Window ():
-    def __init__(self, img_data = data.json):
+    def __init__(self, img_data = "data.json"):
         self.img_index = 0
         self.img_frames = ()
         self.img_info = img_data
@@ -113,27 +113,10 @@ class main_Window ():
         self.img_frames = np.empty((0), dtype=tk.Frame)
         self.imgs = np.empty((0), dtype=tk.Label)
         self.img_names = np.empty((0), dtype=tk.Label)
-        for i in range(100):
-            self.fr_exhibit.rowconfigure(i, minsize=220)
-            for j in range(5):
-                self.fr_exhibit.columnconfigure(j, minsize=180)
-                frame = tk.Frame(
-                    master=self.fr_exhibit,
-                    relief=tk.RAISED,
-                    borderwidth=1,
-                    bg='yellow'
-                )
-                frame.grid(row=i, column=j, ipadx=5, ipady=5, padx=(8, 0))
-                frame.grid_remove()
-                self.img_frames = np.append(self.img_frames, frame)
-
-                label_img = tk.Label(frame)
-                label_img.pack(pady=5)
-                self.imgs = np.append(self.imgs, label_img)
-
-                label_name = tk.Label(master=frame, text=f"Row {i}\nColumn {j}", font=("TkDefaultFont", 10), wraplengt=150)
-                label_name.pack()
-                self.img_names = np.append(self.img_names, label_name)
+        self.img_row = 0
+        for j in range(5):
+            self.fr_exhibit.columnconfigure(j, minsize=180)
+        self.add_img_row(self.img_row)
 
         if len(self.img_info) != 0:
             self.focus = self.img_frames[0]
@@ -144,6 +127,36 @@ class main_Window ():
         
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
         self.bind_display()
+
+    def add_img_row(self, row):
+        self.fr_exhibit.rowconfigure(row, minsize=220)
+        for j in range(5):
+            frame = tk.Frame(
+                master=self.fr_exhibit,
+                relief=tk.RAISED,
+                borderwidth=1,
+                bg='yellow'
+            )
+            frame.grid(row=row, column=j, ipadx=5, ipady=5, padx=(8, 0))
+            frame.grid_remove()
+            self.img_frames = np.append(self.img_frames, frame)
+
+            label_img = tk.Label(frame)
+            label_img.pack(pady=5)
+            self.imgs = np.append(self.imgs, label_img)
+
+            label_name = tk.Label(master=frame, text=f"Row {row}\nColumn {j}", font=("TkDefaultFont", 10), wraplengt=150)
+            label_name.pack()
+            self.img_names = np.append(self.img_names, label_name)
+
+    def remove_img_row(self, row):
+        for i in range(5):
+            self.img_frames[-1].destroy()
+            self.imgs[-1].destroy()
+            self.img_names[-1].destroy()
+        del(self.img_frames[-5])
+        del(self.imgs[-5])
+        del(self.img_names[-5])
 
     def refresh_tags_list(self, tags):
         print(tags)
@@ -164,6 +177,14 @@ class main_Window ():
 
     def refresh_img(self):
         index = 0
+        img_amount = len(self.img_info)
+        while (img_amount <= (self.img_row * 5) and img_amount != 0):
+            self.remove_img_row(self.img_row)
+            self.img_row = self.img_row - 1
+        while (img_amount > ((self.img_row + 1) * 5)):
+            self.img_row = self.img_row + 1
+            self.add_img_row(self.img_row)
+
         for img_info_single in self.img_info:
             img = Image.open(img_info_single['src'])
             img = img.resize(self.img_resize(img.size), Image.ANTIALIAS)
