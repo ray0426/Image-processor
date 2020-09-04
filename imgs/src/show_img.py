@@ -1,15 +1,16 @@
 import tkinter as tk
 from PIL import Image, ImageTk
 
-class Img_Window ():
-    def __init__(self, data):
+class Img_Window ():#tk.Toplevel):
+    def __init__(self, master, data):
+        #tk.Toplevel.__init__(self, master)
         self.img_index = 0
         self.img_list = data
         self.create_window()
         self.window.mainloop()
     
     def create_window(self):
-        self.window = tk.Tk()
+        self.window = tk.Toplevel()
         self.window.title('Img Player')
         self.window.geometry('1280x720')
         self.top_frame = tk.Frame(self.window)

@@ -3,9 +3,11 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 import numpy as np
 import tag_data
+import time
+import show_img
 
 class main_Window ():
-    def __init__(self, img_data = "data.json"):
+    def __init__(self, img_data):
         self.img_index = 0
         self.img_frames = ()
         self.img_info = img_data
@@ -126,7 +128,6 @@ class main_Window ():
         self.refresh_img()
         
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
-        self.bind_display()
 
     def add_img_row(self, row):
         self.fr_exhibit.rowconfigure(row, minsize=220)
@@ -174,6 +175,7 @@ class main_Window ():
                 self.tag_labels[j] = tag_label
             j = j + 1
         self.tags_canvas.yview_moveto(0.0)
+        
 
     def refresh_img(self):
         index = 0
@@ -185,6 +187,7 @@ class main_Window ():
             self.img_row = self.img_row + 1
             self.add_img_row(self.img_row)
 
+        tstart = time.time()
         for img_info_single in self.img_info:
             img = Image.open(img_info_single['src'])
             img = img.resize(self.img_resize(img.size), Image.ANTIALIAS)
@@ -202,9 +205,12 @@ class main_Window ():
 
             self.img_names[index].configure(text=text)
             index = index + 1
+        tstop = time.time()
+        print(tstop - tstart)
+        self.bind_display()
 
-        for i in range(index, 16):
-            self.img_frames[index].grid_remove()
+       # for i in range(index, 16):
+       #     self.img_frames[index].grid_remove()
             
     # function to resize the image with correct width height rate
     def img_resize(self, size):
@@ -236,7 +242,7 @@ class main_Window ():
             for widget in [self.img_frames[i], self.imgs[i], self.img_names[i]]:
                 widget.bind('<Button-1>', lambda event, index=i: self.click(index))
                 widget.bind('<ButtonRelease-1>', lambda event, index=i: self.release(index))
-                widget.bind('<Double-Button-1>', lambda event, index=i: self.click_double(index))
+                #widget.bind('<Double-Button-1>', lambda event, index=i: self.click_double(index))
                 
                 #self.img_frames[i].bind('<Button-1>', lambda event, index=i: self.click(index))
                 #self.img_frames[i].bind('<ButtonRelease-1>', lambda event, index=i: self.release(index))
@@ -259,20 +265,50 @@ class main_Window ():
 
     def click(self, index):
         #print("Click: " + str(index))
-        self.focus.configure(bg='yellow', relief=tk.FLAT)
-        self.focus = self.img_frames[index]
-        self.img_frames[index].configure(bg='red', relief=tk.FLAT)
-
-        self.refresh_tag_info(index)
+        ''' here '''
+        try:
+            if (time.time() - self.click_time) > 0.5:
+                self.click_time = time.time()
+                self.double = 0
+            elif (self.release_time - self.click_time) < 0.5:
+                print("double")
+                self.click_double(index)
+                print("double2")
+                self.click_time = time.time()
+                self.double = 1
+                print("self.double = 1")
+        except Exception as e:
+            print(e)
+            self.click_time = time.time()
+            self.double = 0
+        ''' to here '''
+        #self.focus.configure(bg='yellow', relief=tk.FLAT)
+        #self.focus = self.img_frames[index]
+        #self.img_frames[index].configure(bg='red', relief=tk.FLAT)
+        #print("              time click: " + str(time.time()))
+        #self.refresh_tag_info(index)
+        #print("              time click: " + str(time.time()))
 
 
     def release(self, index):
+        ''' here '''
+        self.release_time = time.time()
+        print(self.double)
+        if (self.release_time - self.click_time) < 0.5 and self.double != 1:
+            print("click")
+            self.focus.configure(bg='yellow', relief=tk.FLAT)
+            self.focus = self.img_frames[index]
+            self.img_frames[index].configure(bg='red', relief=tk.FLAT)
+            self.refresh_tag_info(index)
+        ''' to here '''
         #print("Release: " + str(index))
         #self.img_frames[index].configure(bg='green', relief=tk.RAISED,)
         return
 
     def click_double(self, index):
-        #print("Double click: " + str(index))
+        print("Double click: " + str(index))
+        print("              time double click: " + str(time.time()))
+        self.img_window = show_img.Img_Window(self.window, self.img_info)
         return
 
     def test(self):
