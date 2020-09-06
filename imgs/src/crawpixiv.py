@@ -120,8 +120,8 @@ class Picture():
         sel = soup.select("meta#meta-preload-data")
         if sel:
             for s in sel[0]["content"].split(','):
-                if ("tag" in s and "{" in s):
-                    self.tag.append(s.lstrip('tags":[{authorId')[:-1])
+                if ("tag" in s and "{" in s and not "authorId" in s):
+                    self.tag.append(s.lstrip('tags":[{')[:-1])
     
     def set_paint_time(self, soup):
         sel = soup.select("meta#meta-preload-data")
@@ -396,9 +396,10 @@ if __name__ == '__main__':
     p = Pixiv()
     #p.get_mode()
     #p.get_pic(83113557, ["魔法少女まどか☆マギカ","星空ドレス"])
+    p.get_pic(84072102)
     #p.get_pic(82928832)
     #print(p.db.data)
-    p.run_rank(date = 20200725, limit = 3)
+    #p.run_rank(date = 20200725, limit = 3)
     #p.run_author(11491793)
     #print(p.info)
     #for pic in p.info:
