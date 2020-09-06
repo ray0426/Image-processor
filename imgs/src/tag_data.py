@@ -2,11 +2,13 @@ import json
 import time
 
 class Img_Tag ():
+    def __init__(self, path = "data_tags.json"):
+        self.path = path
     ''' load tags from data_tags.json file to self.data_tag '''
     ''' the file should exist before calling this function '''
     def load_tags(self):
         print("load tags")
-        with open('data_tags.json', 'r', encoding='utf-8') as f:
+        with open(self.path, 'r', encoding='utf-8') as f:
             self.data_tag = json.load(f)
         print("load tags success!")
         return self.data_tag
@@ -14,7 +16,7 @@ class Img_Tag ():
     ''' write tags data from self.data_tag to data_tags.json file '''
     def write_tags(self):
         print("write tags")
-        with open('data_tags.json', 'w', encoding='utf-8') as f:
+        with open(self.path, 'w', encoding='utf-8') as f:
             json.dump(self.data_tag, f, indent=4)
         print("write tags success!")
 
