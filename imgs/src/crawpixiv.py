@@ -120,7 +120,7 @@ class Picture():
         sel = soup.select("meta#meta-preload-data")
         if sel:
             for s in sel[0]["content"].split(','):
-                if ("tag" in s and "{" in s and not "authorId" in s):
+                if ("tag" in s[:6] and "{" in s and not "authorId" in s):
                     self.tag.append(s.lstrip('tags":[{')[:-1])
     
     def set_paint_time(self, soup):
@@ -246,17 +246,18 @@ class Pixiv():
         self.db.write_data()
 
 #get pic part
-    def get_pic(self, locate, tags = []):
-        '''give the website or the number of the pic, 
-            if the tags are included in pic tags,
-            then will dl the pic. '''
-
+    def get_pic_info(self, locate, tags = []):
         url = self.trans_number(locate)
         
         self.head["referer"] = url
 
+        pic = Picture(url,self.path)
+
+        return pic
+
+    def dload_pic(self, p, tags = []):
         pic = []
-        pic.append(Picture(url,self.path)) 
+        pic.append(p) 
         picname = self.get_pic_name(pic[-1])             
         url_front_pic = pic[-1].place[:-16]
         url_back_pic = pic[-1].place[-15:]
@@ -293,11 +294,68 @@ class Pixiv():
         print("for", i ,"pages")
         print("")
 
+        self.head["referer"] = self.url
+        return pic
+
+    def get_pic(self, locate, tags = []):
+        p = self.get_pic_info(locate , tags)
+        pic = self.dload_pic(p , tags)
         self.writetag(pic)
         if self.work_list[self.mode][0]:
             self.writeinfo()
 
-        self.head["referer"] = self.url
+    #    def get_pic_old(self, locate, tags = []):
+    #        '''give the website or the number of the pic, 
+    #            if the tags are included in pic tags,
+    #            then will dl the pic. '''
+    #
+    #        url = self.trans_number(locate)
+    #        
+    #        self.head["referer"] = url
+    #
+    #        pic = []
+    #        pic.append(Picture(url,self.path)) 
+    #        picname = self.get_pic_name(pic[-1])             
+    #        url_front_pic = pic[-1].place[:-16]
+    #        url_back_pic = pic[-1].place[-15:]
+    #
+    #        i = self.next_page(picname, 0)
+    #        #print(i)
+    #        do = True
+    #        
+    #        for tag in tags:
+    #            if not tag in pic[-1].tag:
+    #                do = False
+    #
+    #        req_pic = requests.get(url_front_pic + str(i) + url_back_pic, headers = self.head)
+    #                
+    #        while do and ("403 Forbidden" and "404 Not Found" not in req_pic.text):
+    #            self.info[picname] = pic[-1]   #add new info
+    #            img = req_pic.content
+    #            filename = picname +'.png'            
+    #            with open (self.path + '/' + filename , 'wb') as f:     #dl pic
+    #                f.write(img)
+    #            
+    #            i = self.next_page(picname, i + 1)
+    #            #print(i)
+    #            pic_buffer = Picture()
+    #            pic_buffer.copy(pic[-1])
+    #            pic_buffer.set_page(i)
+    #            pic_buffer.set_download_time()
+    #            pic.append(pic_buffer)     #next page
+    #
+    #            picname = self.get_pic_name(pic[-1])
+    #            req_pic = requests.get(url_front_pic + str(i) + url_back_pic, headers = self.head)
+    #            #change data
+    #
+    #        print("for", i ,"pages")
+    #        print("")
+    #
+    #        self.writetag(pic)
+    #        if self.work_list[self.mode][0]:
+    #            self.writeinfo()
+    #
+    #        self.head["referer"] = self.url
     
     def run_list(self, piclist, tags = []):
         for hr in piclist:
@@ -369,25 +427,25 @@ class Pixiv():
         
         self.run_list(hr_auth, tags = tags)
         
-#    def run_rank_old(self, mode = None, content = None, date = None, tags = []):
-#        '''dl pic on the rank. now can only dl for one page'''
-#        url = self.url + "/ranking.php"
-#        params = {'mode' : mode , 'content' : content , 'date' : date}
-#
-#        req_rank = requests.get(url, params = params)
-#        soup_rank = bs(req_rank.text,"html.parser")
-#        sel_rank = soup_rank.select("div.ranking-image-item a")
-#
-#        hr_rank = []
-#        for s in sel_rank:
-#            hr_rank.append(s["href"])
-#
-#        for hr in hr_rank:
-#            if '/artworks/' in hr:
-#                locate = hr[-8:]
-#                #print(hr)
-#                self.get_pic(locate, tags)
-#                time.sleep(1)    
+    #    def run_rank_old(self, mode = None, content = None, date = None, tags = []):
+    #        '''dl pic on the rank. now can only dl for one page'''
+    #        url = self.url + "/ranking.php"
+    #        params = {'mode' : mode , 'content' : content , 'date' : date}
+    #
+    #        req_rank = requests.get(url, params = params)
+    #        soup_rank = bs(req_rank.text,"html.parser")
+    #        sel_rank = soup_rank.select("div.ranking-image-item a")
+    #
+    #        hr_rank = []
+    #        for s in sel_rank:
+    #            hr_rank.append(s["href"])
+    #
+    #        for hr in hr_rank:
+    #            if '/artworks/' in hr:
+    #                locate = hr[-8:]
+    #                #print(hr)
+    #                self.get_pic(locate, tags)
+    #                time.sleep(1)    
 
         
 if __name__ == '__main__':
