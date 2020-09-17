@@ -168,37 +168,37 @@ class Pixiv():
 
         self.db = Img()
 
-        self.mode = mode
-        self.mode_we_have = {
-            0 : "get_pic_then_save" ,
-            1 : "call_then_save" ,
-            2 : "task_fin_save"
-        }
-        self.mode_depend = ["load save"]
-        self.work_list = np.zeros((len(self.mode_we_have) , len(self.mode_depend)))
-        self.mode_setting()
+        #self.mode = mode
+        #self.mode_we_have = {
+        #    0 : "get_pic_then_save" ,
+        #    1 : "call_then_save" ,
+        #    2 : "task_fin_save"
+        #}
+        #self.mode_depend = ["load save"]
+        #self.work_list = np.zeros((len(self.mode_we_have) , len(self.mode_depend)))
+        #self.mode_setting()
 
         print("pixiv set successfully\n\n")
         #usage : self.work_list
 
 #mode part
-    def get_mode(self):
-        print("current mode",self.mode)
-        print("the modes")
-        print(self.mode_we_have)
-        print()
-        print(self.mode_depend)
-        print(self.work_list)
-
-    def mode_setting(self): 
-        self.work_list[0][0] = 1
+    #def get_mode(self):
+    #    print("current mode",self.mode)
+    #    print("the modes")
+    #    print(self.mode_we_have)
+    #    print()
+    #    print(self.mode_depend)
+    #    print(self.work_list)
+    #
+    #def mode_setting(self): 
+    #    self.work_list[0][0] = 1
 
 #changing part
-    def change_mode(self, mode):
-        if (mode in self.mode_we_have):
-            self.mode = mode
-        else:
-            print("no such type")
+    #def change_mode(self, mode):
+        #    if (mode in self.mode_we_have):
+        #        self.mode = mode
+        #    else:
+        #        print("no such type")
 
     def change_path(self, path):
         self.path = path
@@ -246,7 +246,7 @@ class Pixiv():
         self.db.write_data()
 
 #get pic part
-    def get_pic_info(self, locate, tags = []):
+    def get_pic_info(self, locate):
         url = self.trans_number(locate)
         
         self.head["referer"] = url
@@ -295,14 +295,13 @@ class Pixiv():
         print("")
 
         self.head["referer"] = self.url
+        self.writetag(pic)        
+        self.writeinfo()
         return pic
 
     def get_pic(self, locate, tags = []):
-        p = self.get_pic_info(locate , tags)
-        pic = self.dload_pic(p , tags)
-        self.writetag(pic)
-        if self.work_list[self.mode][0]:
-            self.writeinfo()
+        p = self.get_pic_info(locate)
+        self.dload_pic(p , tags)
 
     #    def get_pic_old(self, locate, tags = []):
     #        '''give the website or the number of the pic, 
@@ -357,28 +356,35 @@ class Pixiv():
     #
     #        self.head["referer"] = self.url
     
-    def run_list(self, piclist, tags = []):
+    def run_list(self, piclist, tags = [], mode = 'get_info'):
+        finish = []
         for hr in piclist:
-            print(hr)
-            try:
-                num_hr = int(hr)
-                self.get_pic(num_hr ,tags = tags)
+            #print(hr)
+            if type(hr) == str:
+                if mode == 'get_info':
+                    finish.append(self.get_pic_info(hr))
+                elif mode == 'pic':
+                    finish.append(self.get_pic(hr ,tags = tags))
                 time.sleep(1)
-            except:
-                print("we got wrong url", hr)
+            elif type(hr) == Picture:
+                finish.append(self.dload_pic(hr, tags = tags))
+            else:
+                print("something wrong for", hr)
+        
+        return finish
 
-    def run_rank(self, tags = [], mode = None, content = None, date = None, limit = float('inf')):
-        '''dl pic on the rank.
-            page : dl for how many pages
-            limit : dl for how many pic'''
+    def run_rank(self, mode = None, content = None, date = None, limit = float('inf')):
+        '''get pic_ingo on the rank.
+            limit : get for how many pic'''
         url = self.url + "/ranking.php"
         params = {'mode' : mode , 'content' : content , 'date' : date, 'format' : 'json'}
 
-        hr_rank = []
+        finish = []
         i = 0
         p = 1
         
         while i < limit:
+            hr_rank = []
             params['p'] = str(p)
 
             try:
@@ -404,10 +410,13 @@ class Pixiv():
 
             p = p + 1
 
-        self.run_list(hr_rank, tags = tags)
+            finish.extend(self.run_list(hr_rank))
+        
+        return finish
     
     def run_author(self, locate, tags = []):
         '''not tested
+            return pic_info
             can found most of the pic of same author
             now can only use pic find pic, can not use author number
             and some pic info may be missed...'''
@@ -425,7 +434,7 @@ class Pixiv():
             except:
                 pass
         
-        self.run_list(hr_auth, tags = tags)
+        return self.run_list(hr_auth)
         
     #    def run_rank_old(self, mode = None, content = None, date = None, tags = []):
     #        '''dl pic on the rank. now can only dl for one page'''
@@ -454,10 +463,11 @@ if __name__ == '__main__':
     p = Pixiv()
     #p.get_mode()
     #p.get_pic(83113557, ["魔法少女まどか☆マギカ","星空ドレス"])
-    p.get_pic(84072102)
+    #p.get_pic(84072102)
     #p.get_pic(82928832)
     #print(p.db.data)
-    #p.run_rank(date = 20200725, limit = 3)
+    f = p.run_rank(date = 20200911, limit = 3)
+    p.run_list(f)
     #p.run_author(11491793)
     #print(p.info)
     #for pic in p.info:
