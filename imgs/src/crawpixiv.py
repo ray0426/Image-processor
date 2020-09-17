@@ -31,6 +31,7 @@ class Picture():
                 soup = bs(req.text,"html.parser")
                 self.setting(soup)
             self.get_info('easy')
+            self.make_readable()
 
     def dict_type(self):
         info = {
@@ -84,7 +85,27 @@ class Picture():
     def is_empty(self):
         if not self.place:
             return True
-    
+
+    def make_readable(self, need_refine = None):
+        if not need_refine:
+            need_refine = [self.title, self.painter, self.tag, self.detail]
+
+        for item in need_refine:
+            if type(item) == str:
+                text = ''
+                for j in range(len(item)):
+                    if ord(item[j]) in range(65536):
+                        text += item[j]
+                    else:
+                        text += chr(0x2593)
+            #    char_list = [item[j] for j in range(len(item)) if ord(item[j]) in range(65536)]
+            #    text = ''
+            #    for j in char_list:
+            #        text += j
+                item = text[:]
+            elif type(item) == list:
+                self.make_readable(item)
+
     def setting(self, soup):
         self.set_title(soup)
         self.set_painter(soup)
@@ -466,7 +487,7 @@ if __name__ == '__main__':
     #p.get_pic(84072102)
     #p.get_pic(82928832)
     #print(p.db.data)
-    f = p.run_rank(date = 20200911, limit = 3)
+    f = p.run_rank(date = 20200905, limit = 1)
     p.run_list(f)
     #p.run_author(11491793)
     #print(p.info)
